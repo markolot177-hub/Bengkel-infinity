@@ -1,40 +1,28 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\AuthController;
 
+// Rute untuk halaman Login (welcome.blade.php)
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/healthcheck', function () {
-    try {
-        DB::connection()->getPdo();
-        return response()->json([
-            'status' => 'ok',
-            'database' => 'connected',
-            'database_name' => DB::connection()->getDatabaseName(),
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'database' => 'not connected',
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-});
-
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegister']);
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout']);
-
-Route::get('/pelanggan/dashboard', function () {
-    return 'Halaman Pelanggan';
-});
-
-Route::get('/pengelola/dashboard', function () {
-    return 'Halaman Pengelola';
-});
+// Rute untuk halaman Dashboard Admin (admin/dashboard.blade.php)
+Route::get('/dashboard-admin', function () {
+    return view('admin.dashboard'); 
+})->name('dashboard.admin');
+Route::get('/kasir', function () {
+    return view('admin.kasir'); // Memanggil file resources/views/admin/kasir.blade.php
+})->name('kasir');
+Route::get('/portal-pelanggan', function () {
+    return view('pelanggan.portal'); 
+})->name('portal');
+Route::get('/workstation-mekanik', function () {
+    return view('mekanik.workstation'); 
+})->name('mekanik.workstation');
+Route::get('/manajemen-stok', function () {
+    return view('admin.stok'); 
+})->name('stok.admin');
+Route::get('/laporan-pendapatan', function () {
+    return view('admin.keuangan'); 
+})->name('keuangan.admin');
