@@ -10,22 +10,25 @@ class TransaksiController extends Controller
 {
     public function index()
     {
-        return response()->json(Transaksi::all());
+        return response()->json([
+            'message' => 'Data transaksi berhasil diambil',
+            'data' => Transaksi::all(),
+        ], 200);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_servis' => 'required|integer',
-            'id_pengelola' => 'required|integer',
+            'id_servis' => 'required|integer|exists:servis,id_servis',
+            'id_pengelola' => 'required|integer|exists:pengelola,id_pengelola',
             'tgl_transaksi' => 'required|date',
-            'total_biaya' => 'required|numeric',
+            'total_biaya' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
-            'metode_pembayaran' => 'required|string',
-            'jumlah_bayar' => 'required|numeric',
-            'kembalian' => 'nullable|numeric',
+            'metode_pembayaran' => 'required|in:Tunai,Transfer,QRIS',
+            'jumlah_bayar' => 'required|numeric|min:0',
+            'kembalian' => 'nullable|numeric|min:0',
             'tgl_pembayaran' => 'nullable|date',
-            'status_pembayaran' => 'required|string',
+            'status_pembayaran' => 'required|in:Belum Lunas,Lunas',
         ]);
 
         $transaksi = Transaksi::create($validated);
