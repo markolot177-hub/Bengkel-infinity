@@ -9,18 +9,36 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Servis extends Model
 {
     protected $table = 'servis';
+
     protected $primaryKey = 'id_servis';
+
     public $timestamps = false;
 
-    protected $fillable = ['id_kendaraan', 'jenis_servis', 'status'];
+    protected $fillable = [
+        'id_kendaraan',
+        'id_mekanik',
+        'tgl_servis',
+        'keluhan',
+        'jenis_servis',
+        'status',
+        'total_biaya',
+    ];
 
     public function kendaraan(): BelongsTo
     {
-        return $this->belongsTo(Kendaraan::class, 'id_kendaraan', 'id_kendaraan');
+        return $this->belongsTo(
+            Kendaraan::class,
+            'id_kendaraan',
+            'id_kendaraan'
+        );
     }
 
     public function transaksi(): HasOne
     {
-        return $this->hasOne(Transaksi::class, 'id_servis', 'id_servis');
+        return $this->hasOne(
+            Transaksi::class,
+            'id_servis',
+            'id_servis'
+        );
     }
 }

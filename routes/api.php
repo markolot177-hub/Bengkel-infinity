@@ -15,5 +15,8 @@ Route::post('/transaksi',
 Route::get('/pelanggan', [PelangganController::class, 'index']);
 Route::get('/kendaraan', [KendaraanController::class, 'index']);
 Route::get('/servis', [ServisController::class, 'index']);
+Route::post('/servis', [ServisController::class, 'store']);
+Route::put('/servis/{id}', [ServisController::class, 'update']);
+Route::delete('/servis/{id}', [ServisController::class, 'destroy']);
 Route::get('/pengelola', [PengelolaController::class, 'index']);
 Route::get('/detail-transaksi', [DetailTransaksiController::class, 'index']);
