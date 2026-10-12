@@ -56,7 +56,8 @@
             <p class="text-[13px] text-slate-500 mb-6 leading-relaxed">Satu gerbang masuk untuk Admin Bengkel, Teknisi/Mekanik, dan Pelanggan. Sistem otomatis mendeteksi hak akses akun Anda.</p>
 
             <!-- ACTION FORM KE ROUTE DASHBOARD ADMIN -->
-            <form action="{{ route('dashboard.admin') }}" method="GET">
+            <form action="/dashboard-admin" method="GET">
+                @csrf
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-1.5">
                         <label class="text-[13px] font-bold text-slate-800">Email / ID Karyawan / No. Handphone</label>

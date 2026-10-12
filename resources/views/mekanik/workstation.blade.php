@@ -37,37 +37,55 @@
                 </div>
             </div>
 
-            <!-- Menu Navigasi -->
+            <!-- Menu Navigasi (YANG SUDAH DIPERBAIKI UNTUK MEKANIK) -->
             <nav class="px-3 space-y-1 mt-2">
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Navigasi Utama</p>
-                <a href="{{ route('dashboard.admin') }}" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
+                
+                <a href="/dashboard-admin" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     Dashboard Admin
                 </a>
-                <a href="{{ route('kasir') }}" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
+
+                <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
                     Monitoring Servis & Kasir
                 </a>
                 
-                <!-- Menu Mekanik Aktif -->
-                <a href="#" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">
+                <!-- Menu Mekanik (AKTIF) -->
+                <a href="/workstation-mekanik" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     Workstation Mekanik
                 </a>
-                
-                <a href="{{ route('portal') ?? '#' }}" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
+
+                <a href="/portal-pelanggan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     Portal Pelanggan
+                </a>
+
+                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    Manajemen Stok
+                </a>
+
+                <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    Laporan Keuangan
                 </a>
             </nav>
         </div>
 
+        <!-- Sidebar Footer -->
         <div class="px-6 py-4 border-t border-slate-200">
             <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1">
                 <span>Status Jaringan Bengkel</span>
                 <span class="text-blue-600 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Aktif</span>
             </div>
-            <p class="text-[9px] text-slate-400">Versi Sistem: 3.4.2 Enterprise</p>
+            <p class="text-[9px] text-slate-400 mb-4">Versi Sistem: 3.4.2 Enterprise</p>
+            
+            <a href="/" class="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Keluar
+            </a>
         </div>
     </aside>
 
@@ -126,7 +144,7 @@
                         </div>
                         <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
                             <svg class="text-blue-500" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            <span class="font-semibold text-slate-700">Bay 03</span> - Stall Mesin & Servis Berkala &bull; Shift Pagi (08:00 - 17:00 WIB)
+                            <span class="font-semibold text-slate-700">Bay 03</span> Stall Mesin & Servis Berkala &bull; Shift Pagi (08:00 - 17:00 WIB)
                         </p>
                     </div>
                 </div>
@@ -262,7 +280,7 @@
                                 </button>
                                 <!-- Step 3 (Active) -->
                                 <button class="flex-1 bg-blue-600 text-white py-2.5 font-bold shadow-inner">
-                                    <svg class="mx-auto mb-1 text-white animate-spin-slow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.26l5.33 3.46"></path></svg>
+                                    <svg class="mx-auto mb-1 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.26l5.33 3.46"></path></svg>
                                     <span class="block">Pengerjaan</span><span class="block text-[8px] text-blue-200">Sedang Berjalan</span>
                                 </button>
                                 <!-- Step 4 (Pending) -->
