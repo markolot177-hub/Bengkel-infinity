@@ -2,68 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pelanggan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('auth.login');
-    }
-
-    public function showRegister()
-    {
-        return view('auth.register');
+        return view('welcome');
     }
 
     public function login(Request $request)
     {
-        $data = $request->validate([
-            'username' => 'required',
+        // Jika diakses via GET (misal direct URL), kembalikan ke halaman utama
+        if ($request->isMethod('get')) {
+            return redirect()->route('login');
+        }
+
+        $credentials = $request->validate([
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if (Auth::guard('pengelola')->attempt($data)) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect('/pengelola/dashboard');
+            $user = Auth::user();
+
+            if ($user->role === 'admin') {
+                return redirect()->route('dashboard.admin');
+            } elseif ($user->role === 'mekanik') {
+                return redirect()->route('mekanik.workstation');
+            } elseif ($user->role === 'kasir') {
+                return redirect()->route('kasir.index');
+            } else {
+                return redirect()->route('portal');
+            }
         }
 
-        if (Auth::guard('pelanggan')->attempt($data)) {
-            $request->session()->regenerate();
-            return redirect('/pelanggan/dashboard');
-        }
-
-        return back()
-            ->withErrors(['username' => 'Username atau password salah'])
-            ->withInput();
-    }
-
-    public function register(Request $request)
-    {
-        $data = $request->validate([
-            'nama' => 'required',
-            'no_hp' => 'required',
-            'alamat' => 'required',
-            'username' => 'required|unique:pelanggan,username',
-            'password' => 'required|min:6',
-        ]);
-
-        $data['password'] = Hash::make($data['password']);
-        Pelanggan::create($data);
-
-        return redirect('/login')->with('success', 'Akun dibuat, silakan login');
+        return back()->withErrors([
+            'email' => 'Email atau kata sandi yang Anda masukkan salah.',
+        ])->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
-        Auth::guard('pelanggan')->logout();
-        Auth::guard('pengelola')->logout();
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }

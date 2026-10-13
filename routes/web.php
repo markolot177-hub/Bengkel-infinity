@@ -1,38 +1,54 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\StockController;
 
-// 1. Halaman Login
-Route::get('/', function () {
-    return view('welcome');
-})->name('login');
+/*
+|--------------------------------------------------------------------------
+| Web Routes - BengkelCare
+|--------------------------------------------------------------------------
+*/
 
-// 2. Mesin Proses Login (BYPASS EKSTREM GET)
-Route::get('/custom-login', function () {
-    return redirect()->route('dashboard.admin');
-})->name('custom.login');
+// Halaman Login & Proses Autentikasi (Menggunakan match GET & POST agar bebas 419)
+Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+Route::match(['get', 'post'], '/login-proses', [AuthController::class, 'login'])->name('login.proses');
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// 3. Rute Halaman-halaman Dashboard
+
+// Dashboard Admin
 Route::get('/dashboard-admin', function () {
     return view('admin.dashboard');
 })->name('dashboard.admin');
 
-Route::get('/kasir', function () {
-    return view('admin.kasir');
-})->name('kasir');
 
-Route::get('/portal-pelanggan', function () {
-    return view('pelanggan.portal');
-})->name('portal');
+// Point of Sale (POS) & Kasir
+Route::get('/kasir', [BookingController::class, 'indexKasir'])->name('kasir.index');
+Route::post('/kasir/bayar/{id}', [BookingController::class, 'prosesPembayaran'])->name('kasir.bayar');
 
-Route::get('/workstation-mekanik', function () {
-    return view('mekanik.workstation');
-})->name('mekanik.workstation');
 
-Route::get('/manajemen-stok', function () {
-    return view('admin.stok');
-})->name('stok.admin');
+// Workstation Mekanik
+Route::get('/workstation-mekanik', [BookingController::class, 'indexMekanik'])->name('mekanik.workstation');
+Route::post('/workstation-mekanik/update/{id}', [BookingController::class, 'updateProgres'])->name('mekanik.update');
 
-Route::get('/laporan-pendapatan', function () {
-    return view('admin.keuangan');
-})->name('keuangan.admin');
+
+// Portal Pelanggan & Booking
+Route::get('/portal-pelanggan', [BookingController::class, 'indexPortal'])->name('portal');
+Route::get('/booking-servis', [BookingController::class, 'create'])->name('booking.create');
+Route::post('/booking-servis', [BookingController::class, 'store'])->name('booking.store');
+
+Route::get('/garasi-saya', function () {
+    return view('pelanggan.garasi');
+})->name('garasi.saya');
+
+
+// Manajemen Stok / Suku Cadang
+Route::get('/manajemen-stok', [StockController::class, 'index'])->name('stok.index');
+Route::post('/manajemen-stok/store', [StockController::class, 'store'])->name('stok.store');
+Route::post('/manajemen-stok/tambah/{id}', [StockController::class, 'tambahStok'])->name('stok.tambah');
+Route::delete('/manajemen-stok/delete/{id}', [StockController::class, 'destroy'])->name('stok.destroy');
+
+
+// Laporan Keuangan & Pendapatan
+Route::get('/laporan-pendapatan', [BookingController::class, 'laporanPendapatan'])->name('keuangan.admin');
