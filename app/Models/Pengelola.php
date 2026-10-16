@@ -2,20 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 
-class Pengelola extends Authenticatable
+class Pengelola extends Model
 {
     protected $table = 'pengelola';
     protected $primaryKey = 'id_pengelola';
-    public $timestamps = false;
 
+    // Masukkan semua nama kolom yang ada di tabel pengelola database Anda
     protected $fillable = ['nama', 'no_hp', 'username', 'password', 'role'];
-    protected $hidden = ['password'];
 
-    public function transaksi(): HasMany
-    {
-        return $this->hasMany(Transaksi::class, 'id_pengelola', 'id_pengelola');
-    }
+    public $timestamps = false;
 }

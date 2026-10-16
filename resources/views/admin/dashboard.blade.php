@@ -10,7 +10,7 @@
 </head>
 <body class="bg-[#F4F7FA] text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- SIDEBAR SESUAI USER FLOW ADMIN -->
+    <!-- SIDEBAR ADMIN -->
     <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-20">
         <div>
             <!-- Logo & Brand -->
@@ -21,126 +21,131 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-slate-900 text-[13px] leading-tight">BengkelCare</h1>
-                        <p class="text-[9px] font-semibold text-slate-500">Panel Kontrol Administrator</p>
+                        <p class="text-[9px] font-semibold text-slate-500">Panel Administrator</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Navigasi Menu Sesuai User Flow -->
+            <!-- Navigasi Menu -->
             <nav class="px-3 space-y-1 mt-4">
-                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama (User Flow)</p>
+                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
 
                 <a href="/dashboard-admin" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">
-                    🏠 Dashboard Admin
+                    🏠 Dashboard Utama
+                </a>
+
+                <a href="{{ route('admin.pengguna.index') }}" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">
+                    👥 Kelola Data Pengguna
                 </a>
 
                 <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">
-                    🚗 Kelola Data Servis & Kasir
-                </a>
-
-                <a href="/workstation-mekanik" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">
-                    🔧 Workstation & Pengerjaan
+                    🚗 Kelola Data Servis
                 </a>
 
                 <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">
-                    📦 Kelola Data Kendaraan & Stok
-                </a>
-
-                <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">
-                    📊 Lihat Laporan Keuangan
-                </a>
-
-                <a href="/portal-pelanggan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">
-                    👥 Kelola Data Pengguna
+                    🚙 Kelola Data Kendaraan
                 </a>
             </nav>
         </div>
 
-        <!-- Sidebar Footer & Logout -->
-        <div class="px-6 py-4 border-t border-slate-200 space-y-2">
-            <div class="text-[10px] text-slate-400">Sesi Login: <span class="text-emerald-600 font-bold">Aktif</span></div>
-            <a href="/" class="flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors">
-                🚪 Logout / Keluar Sistem
+        <div class="px-6 py-4 border-t border-slate-200">
+            <a href="/logout" class="flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition-colors">
+                🚪 Logout Sistem
             </a>
         </div>
     </aside>
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
-
-        <!-- TOP NAVBAR -->
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
+            <h2 class="font-bold text-slate-800 text-sm">Dashboard Utama Administrator</h2>
             <div class="flex items-center gap-3">
-                <span class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase">Status: Berhasil Login</span>
-                <h2 class="font-bold text-slate-800 text-sm">Dashboard Utama Administrator</h2>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-slate-300 overflow-hidden border border-slate-200">
-                    <img src="https://ui-avatars.com/api/?name=Andi+Syarip&background=E2E8F0&color=1E293B" alt="Avatar">
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-slate-800">ANDI SYARIP</p>
-                    <p class="text-[10px] text-slate-500 font-medium">Administrator / Kepala Bengkel</p>
-                </div>
-            </div>
+    <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+</div>
         </header>
 
-        <!-- DASHBOARD BODY (USER FLOW VISUALIZATION) -->
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+        <main class="flex-1 overflow-y-auto p-6 md:p-8">
 
-            <!-- Welcome Banner -->
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-sm flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-black">Selamat Datang di Panel Kontrol BengkelCare</h2>
-                    <p class="text-xs text-blue-100 mt-1">Sistem terintegrasi untuk kelola data pengguna, kendaraan, servis, dan laporan secara real-time.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                <!-- Omset Hari Ini -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-500 text-[11px] uppercase tracking-wider">Omset Hari Ini</h3>
+                        <div class="bg-emerald-100 text-emerald-600 p-1.5 rounded-lg text-sm">💰</div>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800">Rp {{ number_format($omsetHariIni, 0, ',', '.') }}</div>
+                    <p class="text-[11px] text-emerald-600 mt-2 font-bold">Total transaksi harian</p>
                 </div>
-                <div class="flex gap-2">
-                    <a href="/kasir" class="bg-white text-blue-700 font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm hover:bg-blue-50">
-                        + Buka Kasir POS
-                    </a>
+
+                <!-- Total Jumlah Stok -->
+                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-500 text-[11px] uppercase tracking-wider">Total Sparepart (Stok)</h3>
+                        <div class="bg-blue-100 text-blue-600 p-1.5 rounded-lg text-sm">📦</div>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800">{{ number_format($totalStok, 0, ',', '.') }} <span class="text-sm font-medium text-slate-500">Item</span></div>
+                    <p class="text-[11px] text-slate-500 mt-2 font-medium">Tersedia di inventori</p>
+                </div>
+
+                <!-- Peringatan Stok Menipis -->
+                <div class="{{ $stokMenipis > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200' }} rounded-xl border p-5 shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-3 relative z-10">
+                        <h3 class="font-bold {{ $stokMenipis > 0 ? 'text-red-600' : 'text-slate-500' }} text-[11px] uppercase tracking-wider">Stok Menipis (<= 5)</h3>
+                        <div class="{{ $stokMenipis > 0 ? 'bg-red-100 text-red-600' : 'bg-slate-200 text-slate-600' }} p-1.5 rounded-lg text-sm">⚠️</div>
+                    </div>
+                    <div class="text-2xl font-black {{ $stokMenipis > 0 ? 'text-red-700' : 'text-slate-700' }} relative z-10">
+                        {{ $stokMenipis }} <span class="text-sm font-medium">Barang</span>
+                    </div>
+                    @if($stokMenipis > 0)
+                        <p class="text-[11px] text-red-600 mt-2 font-bold relative z-10">Butuh restock segera!</p>
+                    @else
+                        <p class="text-[11px] text-slate-500 mt-2 font-bold relative z-10">Stok aman terkendali</p>
+                    @endif
                 </div>
             </div>
 
-            <!-- Quick Action Cards (User Flow Menu Utama) -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Grafik Penjualan Dinamis -->
+                <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-slate-900 text-sm">Grafik Pendapatan (7 Hari Terakhir)</h3>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded">Update Realtime</span>
+                    </div>
 
-                <!-- Kelola Pengguna -->
-                <a href="/portal-pelanggan" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-blue-400 transition-all group">
-                    <div class="text-blue-600 mb-3 text-lg">👤</div>
-                    <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-600">Kelola Data Pengguna</h3>
-                    <p class="text-[11px] text-slate-500 mt-1">Tambah, edit, atau hapus akun pelanggan & staf.</p>
-                </a>
+                    <div class="h-48 flex items-end justify-between gap-2 border-b border-slate-100 pb-2">
+                        @foreach($grafik as $g)
+                        <div class="w-full bg-blue-300 hover:bg-blue-600 rounded-t-md relative group cursor-pointer transition-all min-h-[5%]" style="height: {{ $g['tinggi_persen'] }}%;">
+                            <span class="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-700 bg-white shadow-sm border border-slate-200 px-1.5 py-0.5 rounded hidden group-hover:block z-10">
+                                {{ $g['total_format'] }}
+                            </span>
+                        </div>
+                        @endforeach
+                    </div>
 
-                <!-- Kelola Kendaraan -->
-                <a href="/manajemen-stok" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-blue-400 transition-all group">
-                    <div class="text-blue-600 mb-3 text-lg">🚙</div>
-                    <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-600">Kelola Kendaraan & Stok</h3>
-                    <p class="text-[11px] text-slate-500 mt-1">Manajemen data unit, garasi, dan suku cadang.</p>
-                </a>
+                    <div class="flex justify-between mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        @foreach($grafik as $g)
+                            <span>{{ $g['hari'] }}</span>
+                        @endforeach
+                    </div>
+                </div>
 
-                <!-- Kelola Servis -->
-                <a href="/kasir" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-blue-400 transition-all group">
-                    <div class="text-blue-600 mb-3 text-lg">⚙️</div>
-                    <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-600">Kelola Data Servis (POS)</h3>
-                    <p class="text-[11px] text-slate-500 mt-1">Monitoring antrean, pengerjaan, & pembayaran.</p>
-                </a>
-
-                <!-- Lihat Laporan -->
-                <a href="/laporan-pendapatan" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:border-blue-400 transition-all group">
-                    <div class="text-blue-600 mb-3 text-lg">📈</div>
-                    <h3 class="font-bold text-slate-900 text-sm group-hover:text-blue-600">Lihat Laporan Keuangan</h3>
-                    <p class="text-[11px] text-slate-500 mt-1">Analitik omset harian, bulanan, & valuasi stok.</p>
-                </a>
-
-            </div>
-
-            <!-- System Status & Flow Check -->
-            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="font-bold text-slate-900 text-sm mb-3">Status Sistem & Logika Aksi</h3>
-                <div class="space-y-2 text-xs text-slate-600">
-                    <p class="flex items-center gap-2">✅ <strong class="text-slate-800">Autentikasi Login:</strong> Berhasil melewati validasi kredensial dan masuk ke dashboard admin.</p>
-                    <p class="flex items-center gap-2">✅ <strong class="text-slate-800">Manajemen Aksi CRUD:</strong> Semua modul (Stok, Booking, Kasir, Mekanik) siap mengeksekusi tambah, ubah, dan hapus data.</p>
-                    <p class="flex items-center gap-2">✅ <strong class="text-slate-800">Pilihan Aksi Lain:</strong> Administrator dapat dengan mudah berpindah antar menu atau melakukan <a href="/" class="text-red-600 font-bold hover:underline">Logout</a> kapan pun.</p>
+               <div class="space-y-4">
+                        @forelse($barangHampirHabis as $barang)
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                            <div>
+                                <!-- Menggunakan nama_barang dan harga_jual sesuai database -->
+                                <p class="text-xs font-bold text-slate-800">{{ $barang->nama_barang ?? 'Nama Barang' }}</p>
+                                <p class="text-[10px] text-slate-500">Harga: Rp {{ number_format($barang->harga_jual ?? 0, 0, ',', '.') }}</p>
+                            </div>
+                            <!-- Menggunakan jumlah_stok -->
+                            <span class="bg-red-100 text-red-700 text-[10px] font-extrabold px-2 py-1 rounded">Sisa {{ $barang->jumlah_stok ?? 0 }}</span>
+                        </div>
+                        @empty
+                        <div class="text-center py-6">
+                            <p class="text-xs text-slate-400">Tidak ada stok yang menipis saat ini.</p>
+                        </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
 

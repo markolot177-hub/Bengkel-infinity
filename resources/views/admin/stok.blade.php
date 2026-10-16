@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Stok - BengkelCare</title>
+    <title>Manajemen sparepart - BengkelCare</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Inter', sans-serif; } </style>
@@ -27,7 +27,7 @@
 
             <nav class="px-3 space-y-1 mt-4">
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
-                <a href="/manajemen-stok" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">📦 Manajemen Stok</a>
+                <a href="/manajemen-stok" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">📦 Manajemen sparepart</a>
                 <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">🛒 Monitoring & Kasir</a>
                 <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">📊 Laporan Keuangan</a>
             </nav>
@@ -40,10 +40,10 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
-            <h2 class="font-bold text-slate-800 text-sm">Manajemen Inventori & Stok Suku Cadang</h2>
+            <h2 class="font-bold text-slate-800 text-sm">Manajemen Inventori & sparepart</h2>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700">ANDI SYARIP (Admin)</span>
-            </div>
+    <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+</div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
@@ -57,7 +57,7 @@
 
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-black text-slate-900 tracking-tight">Datalog Suku Cadang & Pelumas</h2>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight">Datalog sparepart & Pelumas</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Kelola harga beli, harga jual, margin keuntungan, dan pemantauan stok secara akurat.</p>
                 </div>
             </div>
@@ -125,7 +125,7 @@
             <!-- TABEL INVENTORI -->
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                    <h3 class="font-bold text-slate-900 text-sm">Daftar Inventori Suku Cadang</h3>
+                    <h3 class="font-bold text-slate-900 text-sm">Daftar Inventori sparepart</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">

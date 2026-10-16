@@ -27,7 +27,7 @@
 
             <nav class="px-3 space-y-1 mt-4">
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
-                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">📦 Manajemen Stok</a>
+                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">📦 Manajemen sparepart</a>
                 <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">🛒 Monitoring & Kasir</a>
                 <a href="/laporan-pendapatan" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">📊 Laporan Keuangan</a>
             </nav>
@@ -42,7 +42,7 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
             <h2 class="font-bold text-slate-800 text-sm">Laporan Keuangan & Analitik Pendapatan</h2>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700">ANDI SYARIP (Admin)</span>
+                <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
             </div>
         </header>
 

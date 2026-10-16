@@ -42,8 +42,8 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
             <h2 class="font-bold text-slate-800 text-sm">Formulir Booking Servis Mandiri</h2>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700">RINA MELATI (Pelanggan)</span>
-            </div>
+    <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+</div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 md:p-8">
