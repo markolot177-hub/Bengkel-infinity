@@ -10,6 +10,7 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id_pelanggan',
         'no_booking',
         'nopol',
         'nama_pelanggan',
@@ -19,5 +20,18 @@ class Booking extends Model
         'sesi_waktu',
         'keluhan',
         'status',
+        'total_biaya',
+        'metode_pembayaran',
+        'catatan_mekanik',
+        'lampiran',
     ];
+
+    public function pelanggan()
+    {
+        return $this->belongsTo(
+            Pelanggan::class,
+            'id_pelanggan',
+            'id_pelanggan'
+        );
+    }
 }
