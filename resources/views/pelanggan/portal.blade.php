@@ -28,7 +28,7 @@
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Pelanggan</p>
                 <a href="/portal-pelanggan" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">Status & Riwayat Servis</a>
                 <a href="/booking-servis" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Buat Booking Servis</a>
-                <a href="/katalog-harga" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Katalog Harga & Suku Cadang</a>
+                <a href="/" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Katalog Harga & Suku Cadang</a>
             </nav>
         </div>
         <div class="px-6 py-4 border-t border-slate-200">

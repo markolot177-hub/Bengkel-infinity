@@ -57,7 +57,7 @@
                     Garasi Kendaraan Saya
                 </a>
 
-                <a href="/katalog-harga" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
+                <a href="/" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
                     Katalog Harga & Suku Cadang
                 </a>

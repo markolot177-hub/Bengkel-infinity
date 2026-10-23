@@ -50,8 +50,8 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
             <h2 class="font-bold text-slate-800 text-sm">Workstation Pengerjaan Mekanik</h2>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700">BUDI (Mekanik Utama)</span>
-            </div>
+    <span class="text-xs font-bold text-slate-700 uppercase"><?php echo e(session('nama')); ?> (<?php echo e(session('role')); ?>)</span>
+</div>
         </header>
 
         <!-- CONTENT BODY -->

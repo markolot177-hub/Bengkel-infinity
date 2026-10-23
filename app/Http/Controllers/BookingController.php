@@ -21,11 +21,13 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+        // Menambahkan validasi sesi_waktu
         $request->validate([
             'nopol' => 'required',
             'nama_pelanggan' => 'required',
             'kendaraan' => 'required',
             'jenis_layanan' => 'required',
+            'sesi_waktu' => 'required'
         ]);
 
         Booking::create([
@@ -36,6 +38,10 @@ class BookingController extends Controller
             'jenis_layanan' => $request->jenis_layanan,
             'keluhan' => $request->keluhan ?? '-',
             'tanggal_kedatangan' => $request->tanggal_kedatangan ?? date('Y-m-d'),
+
+            // INI SOLUSI ERROR "Field 'sesi_waktu' doesn't have a default value"
+            'sesi_waktu' => $request->sesi_waktu,
+
             'status' => 'Menunggu',
         ]);
 
@@ -84,8 +90,10 @@ class BookingController extends Controller
                 $stock = Stock::find($barangId);
 
                 if ($stock) {
+                    // PERBAIKAN: Menambahkan operator kali (*)
                     $totalPart += ($stock->harga_jual * $qty);
-                    // Kurangi jumlah stok di tabel inventori
+
+                    // PERBAIKAN: Menambahkan operator kurang (-) agar stok berkurang
                     $stock->jumlah_stok = max(0, $stock->jumlah_stok - $qty);
                     $stock->save();
                 }

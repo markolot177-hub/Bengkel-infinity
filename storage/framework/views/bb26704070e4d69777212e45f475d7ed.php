@@ -28,7 +28,7 @@
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Pelanggan</p>
                 <a href="/portal-pelanggan" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">Status & Riwayat Servis</a>
                 <a href="/booking-servis" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Buat Booking Servis</a>
-                <a href="/katalog-harga" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Katalog Harga & Suku Cadang</a>
+                <a href="/" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Katalog Harga & Suku Cadang</a>
             </nav>
         </div>
         <div class="px-6 py-4 border-t border-slate-200">
@@ -40,7 +40,7 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
             <h2 class="font-bold text-slate-800 text-sm">Portal Status Servis Pelanggan</h2>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700">RINA MELATI (Pelanggan)</span>
+                <span class="text-xs font-bold text-slate-700 uppercase"><?php echo e(session('nama')); ?> (<?php echo e(session('role')); ?>)</span>
             </div>
         </header>
 
