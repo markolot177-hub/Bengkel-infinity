@@ -43,14 +43,14 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
             <h2 class="font-bold text-slate-800 text-sm">Manajemen Akun Pengguna & Staf</h2>
             <div class="flex items-center gap-3">
-    <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
-</div>
+                <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+            </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-8">
+        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
 
             @if(session('success'))
-                <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold flex justify-between items-center">
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold flex justify-between items-center">
                     <span>{{ session('success') }}</span>
                     <span class="text-[10px] uppercase font-bold bg-emerald-100 px-2 py-0.5 rounded">Berhasil</span>
                 </div>
@@ -58,10 +58,10 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                <!-- Form Tambah Pengguna -->
+                <!-- Form Tambah Pengguna / Pelanggan -->
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 h-fit">
                     <h3 class="font-bold text-slate-900 text-sm mb-4">Tambah Akun Baru</h3>
-                    <form action="{{ route('admin.pengguna.store') }}" method="POST" class="space-y-4">
+                    <form id="formTambahAkun" action="{{ route('admin.pengguna.store') }}" method="POST" class="space-y-4">
                         @csrf
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
@@ -71,9 +71,13 @@
                             <label class="block text-xs font-bold text-slate-700 mb-1">Nomor Telepon / HP</label>
                             <input type="text" name="no_hp" required placeholder="Contoh: 08123456789" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                         </div>
+                        <div id="wrapperAlamat" class="hidden">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Alamat (Khusus Pelanggan)</label>
+                            <textarea name="alamat" id="inputAlamat" placeholder="Contoh: Jl. Ciwidey No. 123" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium"></textarea>
+                        </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Username / Email Login</label>
-                            <input type="text" name="username" required placeholder="Contoh: admin@bengkelcare.com" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <input type="text" name="username" required placeholder="Contoh: budi_member" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>
@@ -81,11 +85,11 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Hak Akses (Role)</label>
-                            <select name="role" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <select name="role" id="selectRole" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium" onchange="cekRole(this.value)">
                                 <option value="admin">Administrator</option>
                                 <option value="kasir">Kasir</option>
                                 <option value="mekanik">Mekanik</option>
-                                <option value="pelanggan">Pengguna / Pelanggan</option>
+                                <option value="pelanggan">Pengguna / Pelanggan (Member)</option>
                             </select>
                         </div>
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
@@ -94,12 +98,12 @@
                     </form>
                 </div>
 
-                <!-- Tabel Daftar Pengguna -->
+                <!-- Tabel Daftar Pengguna / Staf -->
                 <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                         <div>
-                            <h3 class="font-bold text-slate-900 text-sm">Daftar Pengguna Sistem</h3>
-                            <p class="text-xs text-slate-500 mt-0.5">Seluruh akun staf dan pengelola bengkel yang terdaftar.</p>
+                            <h3 class="font-bold text-slate-900 text-sm">Daftar Pengguna / Staf Sistem</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">Seluruh akun pegawai pengelola bengkel.</p>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -107,7 +111,7 @@
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                     <th class="py-3 px-4">Nama</th>
-                                    <th class="py-3 px-4">Username / Email</th>
+                                    <th class="py-3 px-4">Username</th>
                                     <th class="py-3 px-4">No HP</th>
                                     <th class="py-3 px-4">Role</th>
                                     <th class="py-3 px-4 text-center">Aksi</th>
@@ -121,7 +125,7 @@
                                     <td class="py-3 px-4 text-slate-600">{{ $p->no_hp }}</td>
                                     <td class="py-3 px-4">
                                         <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase
-                                            {{ $p->role == 'admin' ? 'bg-purple-100 text-purple-700' : ($p->role == 'kasir' ? 'bg-emerald-100 text-emerald-700' : ($p->role == 'mekanik' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700')) }}">
+                                            {{ $p->role == 'admin' ? 'bg-purple-100 text-purple-700' : ($p->role == 'kasir' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700') }}">
                                             {{ $p->role }}
                                         </span>
                                     </td>
@@ -135,7 +139,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="py-6 text-center text-slate-400">Belum ada data pengguna.</td>
+                                    <td colspan="5" class="py-6 text-center text-slate-400">Belum ada data pengelola.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -145,8 +149,70 @@
 
             </div>
 
+            <!-- Tabel Daftar Member Pelanggan -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-6">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm">Daftar Member Pelanggan Bengkel</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Akun pelanggan terdaftar yang dikelola oleh admin.</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                       <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                <th class="py-3 px-4">Nama Pelanggan</th>
+                                <th class="py-3 px-4">Username</th>
+                                <th class="py-3 px-4">No HP</th>
+                                <th class="py-3 px-4">Alamat</th>
+                                <th class="py-3 px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-xs">
+                            @forelse($pelanggans ?? [] as $pelanggan)
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-3 px-4 font-bold text-slate-800">{{ $pelanggan->nama }}</td>
+                                <td class="py-3 px-4 text-slate-600">{{ $pelanggan->username }}</td>
+                                <td class="py-3 px-4 text-slate-600">{{ $pelanggan->no_hp }}</td>
+                                <td class="py-3 px-4 text-slate-600">{{ $pelanggan->alamat }}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <form action="{{ route('admin.pelanggan.destroy', $pelanggan->id_pelanggan) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data pelanggan ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-slate-400">Belum ada data member pelanggan.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
     </div>
 
+    <!-- JavaScript untuk Penyesuaian Route Form -->
+    <script>
+    function cekRole(val) {
+        const form = document.getElementById('formTambahAkun');
+        const wrapperAlamat = document.getElementById('wrapperAlamat');
+        const inputAlamat = document.getElementById('inputAlamat');
+
+        if (val === 'pelanggan') {
+            form.action = "{{ route('admin.pelanggan.store') }}";
+            wrapperAlamat.classList.remove('hidden');
+            inputAlamat.setAttribute('required', 'required');
+        } else {
+            form.action = "{{ route('admin.pengguna.store') }}";
+            wrapperAlamat.classList.add('hidden');
+            inputAlamat.removeAttribute('required');
+        }
+    }
+    </script>
 </body>
 </html>

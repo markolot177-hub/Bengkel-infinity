@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen sparepart - BengkelCare</title>
+    <title>Manajemen Sparepart - BengkelCare</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 <body class="bg-[#F4F7FA] text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- SIDEBAR (HANYA STOK, KASIR, LAPORAN) -->
+    <!-- SIDEBAR -->
     <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-20">
         <div>
             <div class="h-16 flex items-center px-6 border-b border-slate-100">
@@ -27,7 +27,7 @@
 
             <nav class="px-3 space-y-1 mt-4">
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
-                <a href="/manajemen-stok" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">📦 Manajemen sparepart</a>
+                <a href="/manajemen-stok" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">📦 Manajemen Sparepart</a>
                 <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">🛒 Monitoring & Kasir</a>
                 <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">📊 Laporan Keuangan</a>
             </nav>
@@ -40,10 +40,10 @@
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
-            <h2 class="font-bold text-slate-800 text-sm">Manajemen Inventori & sparepart</h2>
+            <h2 class="font-bold text-slate-800 text-sm">Manajemen Inventori & Sparepart</h2>
             <div class="flex items-center gap-3">
-    <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
-</div>
+                <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+            </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
@@ -57,7 +57,7 @@
 
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-black text-slate-900 tracking-tight">Datalog sparepart & Pelumas</h2>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight">Datalog Sparepart & Pelumas</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Kelola harga beli, harga jual, margin keuntungan, dan pemantauan stok secara akurat.</p>
                 </div>
             </div>
@@ -87,7 +87,8 @@
             <!-- FORM TAMBAH BARANG -->
             <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                 <h3 class="font-bold text-slate-900 text-sm mb-4">➕ Tambah Suku Cadang & Harga Modal (Beli)</h3>
-                <form action="{{ route('stok.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-7 gap-3">
+                <!-- PERUBAHAN: Route form disesuaikan ke sparepart.store -->
+                <form action="{{ route('sparepart.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-7 gap-3">
                     @csrf
                     <div class="md:col-span-2">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Barang:</label>
@@ -125,7 +126,7 @@
             <!-- TABEL INVENTORI -->
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                    <h3 class="font-bold text-slate-900 text-sm">Daftar Inventori sparepart</h3>
+                    <h3 class="font-bold text-slate-900 text-sm">Daftar Inventori Sparepart</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -140,7 +141,8 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                            @forelse($stocks as $item)
+                            <!-- PERUBAHAN: Variabel diubah menjadi $spareparts -->
+                            @forelse($spareparts as $item)
                             <tr class="hover:bg-slate-50/50">
                                 <td class="py-4 px-4">
                                     <span class="font-bold text-slate-900 block">{{ $item->nama_barang }}</span>
@@ -158,12 +160,14 @@
                                 </td>
                                 <td class="py-4 px-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <form action="{{ route('stok.tambah', $item->id) }}" method="POST" class="inline-flex items-center gap-1">
+                                        <!-- PERUBAHAN: Route disesuaikan ke sparepart.tambah -->
+                                        <form action="{{ route('sparepart.tambah', $item->id) }}" method="POST" class="inline-flex items-center gap-1">
                                             @csrf
                                             <input type="number" name="tambah_jumlah" value="1" min="1" class="w-12 bg-white border border-slate-200 rounded text-center text-xs py-1">
                                             <button type="submit" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px] px-2 py-1 rounded border border-blue-200">+ Stok</button>
                                         </form>
-                                        <form action="{{ route('stok.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
+                                        <!-- PERUBAHAN: Route disesuaikan ke sparepart.destroy -->
+                                        <form action="{{ route('sparepart.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[10px] px-2 py-1 rounded border border-red-200">Hapus</button>

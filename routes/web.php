@@ -5,7 +5,8 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\StockController;
+// PERUBAHAN 1: Mengubah nama controller
+use App\Http\Controllers\SparepartController; 
 use App\Http\Controllers\PenggunaController;
 
 /*
@@ -28,11 +29,11 @@ Route::get('/dashboard-admin', function () {
         ->whereDate('tgl_servis', Carbon::today())
         ->sum('total_biaya');
 
-    // 2. Ambil Total Sparepart (Menggunakan tabel 'stocks' dan kolom 'jumlah_stok')
-    $totalStok = DB::table('stocks')->sum('jumlah_stok');
+    // 2. Ambil Total Sparepart (PERUBAHAN 2: Menggunakan tabel 'sparepart')
+    $totalStok = DB::table('sparepart')->sum('jumlah_stok');
 
     // 3. Peringatan Stok Menipis (Misalnya jumlah_stok <= 5)
-    $barangHampirHabis = DB::table('stocks')
+    $barangHampirHabis = DB::table('sparepart') // PERUBAHAN 2: Menggunakan tabel 'sparepart'
         ->where('jumlah_stok', '<=', 5)
         ->get();
 
@@ -86,11 +87,20 @@ Route::get('/garasi-saya', function () {
 
 
 // Manajemen Stok / Suku Cadang
-Route::get('/manajemen-stok', [StockController::class, 'index'])->name('stok.index');
-Route::post('/manajemen-stok/store', [StockController::class, 'store'])->name('stok.store');
-Route::post('/manajemen-stok/tambah/{id}', [StockController::class, 'tambahStok'])->name('stok.tambah');
-Route::delete('/manajemen-stok/delete/{id}', [StockController::class, 'destroy'])->name('stok.destroy');
+// PERUBAHAN 3: Menggunakan SparepartController dan name route yang sesuai dengan Blade
+Route::get('/manajemen-stok', [SparepartController::class, 'index'])->name('sparepart.index');
+Route::post('/manajemen-stok/store', [SparepartController::class, 'store'])->name('sparepart.store');
+Route::post('/manajemen-stok/tambah/{id}', [SparepartController::class, 'tambahStok'])->name('sparepart.tambah');
+Route::delete('/manajemen-stok/delete/{id}', [SparepartController::class, 'destroy'])->name('sparepart.destroy');
 
 
 // Laporan Keuangan & Pendapatan
 Route::get('/laporan-pendapatan', [BookingController::class, 'laporanPendapatan'])->name('keuangan.admin');
+// Rute Kelola Data Pengguna & Pelanggan (Admin)
+Route::get('/admin/pengguna', [PenggunaController::class, 'index'])->name('admin.pengguna.index');
+Route::post('/admin/pengguna', [PenggunaController::class, 'store'])->name('admin.pengguna.store');
+Route::delete('/admin/pengguna/{id}', [PenggunaController::class, 'destroy'])->name('admin.pengguna.destroy');
+
+// Rute Khusus Pendaftaran Member Pelanggan oleh Admin
+Route::post('/admin/pelanggan/store', [PenggunaController::class, 'storePelanggan'])->name('admin.pelanggan.store');
+Route::delete('/admin/pelanggan/{id}', [PenggunaController::class, 'destroyPelanggan'])->name('admin.pelanggan.destroy');

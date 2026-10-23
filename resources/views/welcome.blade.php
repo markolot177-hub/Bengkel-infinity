@@ -43,14 +43,7 @@
             </button>
         </form>
 
-        <!-- Keterangan Akun Uji Coba -->
-        <div class="mt-6 pt-6 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
-            <p class="font-bold text-slate-700 mb-1">Akun Master Pengujian:</p>
-            <p>&bull; Admin: <code class="bg-slate-100 px-1 rounded">admin@bengkelcare.com</code> / <code class="bg-slate-100 px-1 rounded">password123</code></p>
-            <p>&bull; Mekanik: <code class="bg-slate-100 px-1 rounded">mekanik@bengkelcare.com</code> / <code class="bg-slate-100 px-1 rounded">password123</code></p>
-            <p>&bull; Kasir: <code class="bg-slate-100 px-1 rounded">kasir@bengkelcare.com</code> / <code class="bg-slate-100 px-1 rounded">password123</code></p>
-            <p>&bull; Pengguna: <code class="bg-slate-100 px-1 rounded">pelanggan@bengkelcare.com</code> / <code class="bg-slate-100 px-1 rounded">password123</code></p>
-        </div>
+        
 
     </div>
 

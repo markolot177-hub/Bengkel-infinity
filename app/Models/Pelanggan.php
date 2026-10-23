@@ -2,20 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class Pelanggan extends Authenticatable
+class Pelanggan extends Model
 {
-    protected $table = 'pelanggan';
-    protected $primaryKey = 'id_pelanggan';
-    public $timestamps = false;
+    use HasFactory;
 
-    protected $fillable = ['nama', 'no_hp', 'alamat', 'username', 'password'];
-    protected $hidden = ['password'];
+    // Arahkan ke nama tabel yang benar
+    protected $table = 'pelanggan'; 
+    
+    // Beritahu Laravel bahwa Primary Key Anda adalah id_pelanggan, bukan id
+    protected $primaryKey = 'id_pelanggan'; 
 
-    public function kendaraan(): HasMany
-    {
-        return $this->hasMany(Kendaraan::class, 'id_pelanggan', 'id_pelanggan');
-    }
+    protected $fillable = [
+        'nama',
+        'no_hp',
+        'alamat',
+        'username',
+        'password',
+    ];
 }

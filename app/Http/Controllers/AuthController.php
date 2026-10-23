@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pengelola;
+use App\Models\Pelanggan; // Tambahkan model Pelanggan
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -14,62 +16,94 @@ class AuthController extends Controller
         return view('welcome');
     }
 
-    // Proses login
+    // Proses login dengan pemisahan tabel Pengelola dan Pelanggan
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required',
+            'email' => 'required', // Input form bisa berupa username/email
             'password' => 'required',
         ]);
 
-        // Cek data di tabel pengelola berdasarkan username / email
-        $user = Pengelola::where('username', $request->email)
-                    ->orWhere('username', 'LIKE', '%' . $request->email . '%')
+        $credential = $request->email;
+        $password = $request->password;
+
+        // ==========================================
+        // TAHAP 1: CEK KE TABEL PENGELOLA (Admin, Kasir, Mekanik)
+        // ==========================================
+        $pengelola = Pengelola::where('username', $credential)
+                    ->orWhere('username', 'LIKE', '%' . $credential . '%')
                     ->first();
 
-        $isPasswordValid = false;
-
-        if ($user) {
-            // Periksa apakah password di database menggunakan format hash atau teks biasa
-            if (\Str::startsWith($user->password, '$2y$') || \Str::startsWith($user->password, '$2a$')) {
-                // Jika terdeteksi hash bcrypt, gunakan Hash::check
-                if (Hash::check($request->password, $user->password)) {
+        if ($pengelola) {
+            $isPasswordValid = false;
+            
+            // Periksa format password (hash bcrypt atau teks biasa)
+            if (Str::startsWith($pengelola->password, '$2y$') || Str::startsWith($pengelola->password, '$2a$')) {
+                if (Hash::check($password, $pengelola->password)) {
                     $isPasswordValid = true;
                 }
             } else {
-                // Jika berupa teks biasa (plain text)
-                if ($user->password === $request->password) {
+                if ($pengelola->password === $password) {
                     $isPasswordValid = true;
                 }
             }
+
+            if ($isPasswordValid) {
+                // Simpan session pegawai
+                session([
+                    'id_pengelola' => $pengelola->id_pengelola,
+                    'nama' => $pengelola->nama,
+                    'role' => strtolower($pengelola->role),
+                    'logged_in' => true
+                ]);
+
+                $role = strtolower($pengelola->role);
+                if ($role == 'admin') {
+                    return redirect()->route('dashboard.admin')->with('success', 'Berhasil login sebagai Admin!');
+                } elseif ($role == 'kasir') {
+                    return redirect()->route('kasir.index')->with('success', 'Berhasil login sebagai Kasir!');
+                } elseif ($role == 'mekanik') {
+                    return redirect()->route('mekanik.workstation')->with('success', 'Berhasil login sebagai Mekanik!');
+                }
+
+                return redirect('/dashboard-admin');
+            }
         }
 
-        // Jika user ditemukan dan password valid
-        if ($user && $isPasswordValid) {
+        // ==========================================
+        // TAHAP 2: CEK KE TABEL PELANGGAN
+        // ==========================================
+        $pelanggan = Pelanggan::where('username', $credential)->first();
 
-            // Simpan session login berdasarkan data pengelola
-            session([
-                'id_pengelola' => $user->id_pengelola,
-                'nama' => $user->nama,
-                'role' => $user->role,
-                'logged_in' => true
-            ]);
+        if ($pelanggan) {
+            $isPelangganValid = false;
 
-            // Arahkan ke halaman berdasarkan role masing-masing
-            if ($user->role == 'admin') {
-                return redirect()->route('dashboard.admin')->with('success', 'Berhasil login sebagai Admin!');
-            } elseif ($user->role == 'kasir') {
-                return redirect()->route('kasir.index')->with('success', 'Berhasil login sebagai Kasir!');
-            } elseif ($user->role == 'mekanik') {
-                return redirect()->route('mekanik.workstation')->with('success', 'Berhasil login sebagai Mekanik!');
-            } elseif ($user->role == 'pelanggan') {
-                return redirect()->route('portal')->with('success', 'Berhasil login sebagai Pelanggan!');
+            // Periksa format password pada tabel pelanggan
+            if (Str::startsWith($pelanggan->password, '$2y$') || Str::startsWith($pelanggan->password, '$2a$')) {
+                if (Hash::check($password, $pelanggan->password)) {
+                    $isPelangganValid = true;
+                }
+            } else {
+                if ($pelanggan->password === $password) {
+                    $isPelangganValid = true;
+                }
             }
 
-            return redirect('/dashboard-admin');
+            if ($isPelangganValid) {
+                // Simpan session khusus pelanggan
+                session([
+                    'id_pelanggan' => $pelanggan->id_pelanggan,
+                    'nama' => $pelanggan->nama,
+                    'role' => 'pelanggan',
+                    'logged_in' => true
+                ]);
+
+                return redirect()->route('portal')->with('success', 'Berhasil login sebagai Pelanggan!');
+            }
         }
 
-        return back()->withErrors(['error' => 'Email atau kata sandi yang Anda masukkan salah.'])->withInput();
+        // Jika kedua tabel gagal mencocokkan data
+        return back()->withErrors(['error' => 'Username atau kata sandi yang Anda masukkan salah.'])->withInput();
     }
 
     // Proses logout
