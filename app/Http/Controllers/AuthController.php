@@ -107,9 +107,11 @@ class AuthController extends Controller
     }
 
     // Proses logout
-    public function logout()
-    {
-        session()->flush();
-        return redirect('/')->with('success', 'Berhasil keluar akun.');
-    }
+    public function logout(Request $request)
+{
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/')->with('success', 'Berhasil keluar akun.');
+}
 }
