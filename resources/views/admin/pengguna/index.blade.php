@@ -197,22 +197,34 @@
     </div>
 
     <!-- JavaScript untuk Penyesuaian Route Form -->
-    <script>
-    function cekRole(val) {
-        const form = document.getElementById('formTambahAkun');
-        const wrapperAlamat = document.getElementById('wrapperAlamat');
-        const inputAlamat = document.getElementById('inputAlamat');
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('formTambahAkun');
+    const selectRole = document.getElementById('selectRole');
+    const wrapperAlamat = document.getElementById('wrapperAlamat');
+    const inputAlamat = document.getElementById('inputAlamat');
 
-        if (val === 'pelanggan') {
+    function cekRole() {
+        if (selectRole.value === 'pelanggan') {
             form.action = "{{ route('admin.pelanggan.store') }}";
             wrapperAlamat.classList.remove('hidden');
-            inputAlamat.setAttribute('required', 'required');
+            inputAlamat.required = true;
         } else {
             form.action = "{{ route('admin.pengguna.store') }}";
             wrapperAlamat.classList.add('hidden');
-            inputAlamat.removeAttribute('required');
+            inputAlamat.required = false;
         }
     }
-    </script>
+
+    selectRole.addEventListener('change', cekRole);
+
+    form.addEventListener('submit', function () {
+        cekRole();
+    });
+
+    cekRole();
+});
+</script>
 </body>
 </html>
+

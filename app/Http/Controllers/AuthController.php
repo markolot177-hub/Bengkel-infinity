@@ -36,7 +36,7 @@ class AuthController extends Controller
 
         if ($pengelola) {
             $isPasswordValid = false;
-            
+
             // Periksa format password (hash bcrypt atau teks biasa)
             if (Str::startsWith($pengelola->password, '$2y$') || Str::startsWith($pengelola->password, '$2a$')) {
                 if (Hash::check($password, $pengelola->password)) {

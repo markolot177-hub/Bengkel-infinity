@@ -9,11 +9,11 @@ class Pelanggan extends Model
 {
     use HasFactory;
 
-    // Arahkan ke nama tabel yang benar
-    protected $table = 'pelanggan'; 
-    
-    // Beritahu Laravel bahwa Primary Key Anda adalah id_pelanggan, bukan id
-    protected $primaryKey = 'id_pelanggan'; 
+    protected $table = 'pelanggan';
+
+    protected $primaryKey = 'id_pelanggan';
+
+    public $timestamps = false;
 
     protected $fillable = [
         'nama',
