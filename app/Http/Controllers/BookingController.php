@@ -73,6 +73,10 @@ class BookingController extends Controller
 
     public function indexMekanik()
     {
+        if (session('role') !== 'mekanik') {
+            abort(403, 'Akses hanya untuk mekanik.');
+        }
+
         $bookings = Booking::whereIn(
             'status',
             ['Menunggu', 'Dikerjakan']
@@ -83,6 +87,10 @@ class BookingController extends Controller
 
     public function updateProgres(Request $request, $id)
     {
+        if (session('role') !== 'mekanik') {
+            abort(403, 'Akses hanya untuk mekanik.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:Menunggu,Dikerjakan,Selesai',
             'catatan_mekanik' => 'nullable|string',
@@ -90,6 +98,7 @@ class BookingController extends Controller
         ]);
 
         $booking = Booking::findOrFail($id);
+
         $booking->status = $validated['status'];
         $booking->catatan_mekanik = $validated['catatan_mekanik'] ?? null;
 
@@ -110,6 +119,10 @@ class BookingController extends Controller
 
     public function indexKasir()
     {
+        if (session('role') !== 'kasir') {
+            abort(403, 'Akses hanya untuk kasir.');
+        }
+
         $bookings = Booking::latest()->get();
 
         // Nama variabel $stocks dipertahankan agar kompatibel
@@ -121,6 +134,10 @@ class BookingController extends Controller
 
     public function prosesPembayaran(Request $request, $id)
     {
+        if (session('role') !== 'kasir') {
+            abort(403, 'Akses hanya untuk kasir.');
+        }
+
         $validated = $request->validate([
             'biaya_jasa' => 'nullable|numeric|min:0',
             'metode_pembayaran' => 'nullable|in:Tunai,Transfer,QRIS',
@@ -173,6 +190,10 @@ class BookingController extends Controller
 
     public function laporanPendapatan()
     {
+        if (session('role') !== 'admin') {
+            abort(403, 'Akses hanya untuk admin.');
+        }
+
         $transaksiSelesai = Booking::where(
             'status',
             'Selesai'
