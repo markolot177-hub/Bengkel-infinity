@@ -182,4 +182,65 @@ class RbacAuthorizationTest extends TestCase
         $response->assertOk();
         $response->assertJsonMissingPath('data.0.password');
     }
+
+    public function test_mechanic_cannot_update_another_mechanics_service(): void
+    {
+        $customerId = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Tes IDOR',
+            'no_hp' => '080000000101',
+            'alamat' => 'Alamat Tes',
+            'username' => 'pelanggan_idor_test',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $vehicleId = DB::table('kendaraan')->insertGetId([
+            'id_pelanggan' => $customerId,
+            'no_polisi' => 'D1234XYZ',
+            'merk' => 'Honda',
+            'tipe' => 'Beat',
+            'tahun' => 2024,
+            'warna' => 'Hitam',
+        ], 'id_kendaraan');
+
+        $mechanicA = DB::table('pengelola')->insertGetId([
+            'nama' => 'Mekanik A',
+            'no_hp' => '080000000102',
+            'username' => 'mekanik_idor_a',
+            'password' => bcrypt('password-test'),
+            'role' => 'mekanik',
+        ], 'id_pengelola');
+
+        $mechanicB = DB::table('pengelola')->insertGetId([
+            'nama' => 'Mekanik B',
+            'no_hp' => '080000000103',
+            'username' => 'mekanik_idor_b',
+            'password' => bcrypt('password-test'),
+            'role' => 'mekanik',
+        ], 'id_pengelola');
+
+        $serviceId = DB::table('servis')->insertGetId([
+            'id_kendaraan' => $vehicleId,
+            'id_mekanik' => $mechanicB,
+            'tgl_servis' => '2026-10-25',
+            'keluhan' => 'Servis milik mekanik B',
+            'jenis_servis' => 'Servis ringan',
+            'status' => 'Menunggu',
+            'total_biaya' => 0,
+        ], 'id_servis');
+
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'mekanik',
+            'id_pengelola' => $mechanicA,
+        ])->putJson('/api/servis/' . $serviceId, [
+            'status' => 'Diproses',
+        ])->assertForbidden();
+
+        $this->assertSame(
+            'Menunggu',
+            DB::table('servis')
+                ->where('id_servis', $serviceId)
+                ->value('status')
+        );
+    }
 }
