@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Servis;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ServisController extends Controller
 {
@@ -50,7 +49,7 @@ class ServisController extends Controller
         ], 201);
     }
 
-    // Mengubah status atau data servis
+    // Mengubah data servis dengan pengecekan anti-IDOR
     public function update(Request $request, $id)
     {
         $servis = Servis::find($id);
@@ -59,6 +58,19 @@ class ServisController extends Controller
             return response()->json([
                 'message' => 'Data servis tidak ditemukan',
             ], 404);
+        }
+
+        // Mekanik hanya boleh mengubah servis yang ditugaskan kepadanya
+        if (
+            session('role') === 'mekanik' &&
+            (
+                !session()->has('id_pengelola') ||
+                (int) session('id_pengelola') !== (int) $servis->id_mekanik
+            )
+        ) {
+            return response()->json([
+                'message' => 'Kamu tidak memiliki akses ke servis ini.',
+            ], 403);
         }
 
         $validated = $request->validate([
@@ -70,6 +82,17 @@ class ServisController extends Controller
             'id_mekanik' => 'sometimes|required|integer|exists:pengelola,id_pengelola',
         ]);
 
+        // Mekanik tidak boleh memindahkan servis ke mekanik lain
+        if (
+            session('role') === 'mekanik' &&
+            isset($validated['id_mekanik']) &&
+            (int) $validated['id_mekanik'] !== (int) session('id_pengelola')
+        ) {
+            return response()->json([
+                'message' => 'Mekanik tidak boleh mengubah penugasan servis.',
+            ], 403);
+        }
+
         $servis->update($validated);
 
         return response()->json([
@@ -78,7 +101,7 @@ class ServisController extends Controller
         ], 200);
     }
 
-    // Menghapus data servis
+    // Menghapus data servis (akses admin diatur melalui middleware route)
     public function destroy($id)
     {
         $servis = Servis::find($id);
