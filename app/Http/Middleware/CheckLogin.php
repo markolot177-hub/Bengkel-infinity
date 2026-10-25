@@ -10,10 +10,15 @@ class CheckLogin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Periksa apakah pengguna sudah login
         if (!session('logged_in')) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Silakan login terlebih dahulu.',
+                ], 401);
+            }
+
             return redirect('/')->withErrors([
-                'error' => 'Silakan login terlebih dahulu.'
+                'error' => 'Silakan login terlebih dahulu.',
             ]);
         }
 

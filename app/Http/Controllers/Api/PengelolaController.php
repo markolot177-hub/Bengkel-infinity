@@ -9,6 +9,19 @@ class PengelolaController extends Controller
 {
     public function index()
     {
-        return response()->json(Pengelola::all());
+        $data = Pengelola::query()
+            ->select([
+                'id_pengelola',
+                'nama',
+                'no_hp',
+                'username',
+                'role',
+            ])
+            ->get();
+
+        return response()->json([
+            'message' => 'Data pengelola berhasil diambil',
+            'data' => $data,
+        ], 200);
     }
 }

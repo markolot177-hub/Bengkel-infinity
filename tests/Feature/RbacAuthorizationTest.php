@@ -83,7 +83,7 @@ class RbacAuthorizationTest extends TestCase
             'status' => 'Menunggu',
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ], 'id');
 
         DB::table('bookings')->insert([
             'no_booking' => 'BC-TEST00002',
@@ -113,5 +113,33 @@ class RbacAuthorizationTest extends TestCase
                 && (int) $bookings->first()->id === $bookingA
                 && (int) $bookings->first()->id_pelanggan === $customerA;
         });
+    }
+
+    public function test_guest_cannot_access_api_pelanggan(): void
+    {
+        $this->getJson('/api/pelanggan')->assertUnauthorized();
+    }
+
+    public function test_guest_cannot_access_api_transaksi(): void
+    {
+        $this->getJson('/api/transaksi')->assertUnauthorized();
+    }
+
+    public function test_customer_cannot_access_admin_api_pelanggan(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->getJson('/api/pelanggan')->assertForbidden();
+    }
+
+    public function test_customer_cannot_access_admin_api_pengelola(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->getJson('/api/pengelola')->assertForbidden();
     }
 }

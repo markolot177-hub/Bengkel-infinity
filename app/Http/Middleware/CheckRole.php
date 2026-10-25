@@ -14,12 +14,24 @@ class CheckRole
         string ...$roles
     ): Response {
         if (!session('logged_in')) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Silakan login terlebih dahulu.',
+                ], 401);
+            }
+
             return redirect('/')->withErrors([
-                'error' => 'Silakan login terlebih dahulu.'
+                'error' => 'Silakan login terlebih dahulu.',
             ]);
         }
 
         if (!in_array(session('role'), $roles, true)) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Anda tidak memiliki izin untuk mengakses data ini.',
+                ], 403);
+            }
+
             abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
 
