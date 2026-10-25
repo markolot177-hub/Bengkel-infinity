@@ -47,4 +47,11 @@ class RbacAuthorizationTest extends TestCase
             'id_pelanggan' => 1,
         ])->get('/workstation-mekanik')->assertForbidden();
     }
+
+    public function test_customer_portal_only_shows_own_bookings(): void
+    {
+        $this->markTestSkipped(
+            'Pengujian anti-IDOR otomatis menunggu database pengujian.'
+        );
+    }
 }
