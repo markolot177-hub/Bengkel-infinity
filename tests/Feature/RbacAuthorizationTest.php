@@ -3,9 +3,13 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 class RbacAuthorizationTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_guest_cannot_access_booking_servis(): void
     {
         $this->get('/booking-servis')->assertRedirect('/');
@@ -50,8 +54,64 @@ class RbacAuthorizationTest extends TestCase
 
     public function test_customer_portal_only_shows_own_bookings(): void
     {
-        $this->markTestSkipped(
-            'Pengujian anti-IDOR otomatis menunggu database pengujian.'
-        );
+        $customerA = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Test A',
+            'no_hp' => '080000000001',
+            'alamat' => 'Alamat Test A',
+            'username' => 'test_customer_a',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $customerB = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Test B',
+            'no_hp' => '080000000002',
+            'alamat' => 'Alamat Test B',
+            'username' => 'test_customer_b',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $bookingA = DB::table('bookings')->insertGetId([
+            'no_booking' => 'BC-TEST00001',
+            'id_pelanggan' => $customerA,
+            'nopol' => 'D1234AAA',
+            'nama_pelanggan' => 'Pelanggan Test A',
+            'kendaraan' => 'Motor Test A',
+            'jenis_layanan' => 'Servis ringan',
+            'tanggal_kedatangan' => '2026-10-25',
+            'sesi_waktu' => 'Pagi',
+            'keluhan' => 'Booking milik A',
+            'status' => 'Menunggu',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('bookings')->insert([
+            'no_booking' => 'BC-TEST00002',
+            'id_pelanggan' => $customerB,
+            'nopol' => 'D5678BBB',
+            'nama_pelanggan' => 'Pelanggan Test B',
+            'kendaraan' => 'Motor Test B',
+            'jenis_layanan' => 'Servis ringan',
+            'tanggal_kedatangan' => '2026-10-25',
+            'sesi_waktu' => 'Siang',
+            'keluhan' => 'Booking milik B',
+            'status' => 'Menunggu',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => $customerA,
+        ])->get('/portal-pelanggan');
+
+        $response->assertOk();
+
+        $response->assertViewHas('bookings', function ($bookings) use ($customerA, $bookingA) {
+            return $bookings->count() === 1
+                && (int) $bookings->first()->id === $bookingA
+                && (int) $bookings->first()->id_pelanggan === $customerA;
+        });
     }
 }
