@@ -9,10 +9,11 @@ use Illuminate\Validation\ValidationException;
 use App\Models\Booking;
 use App\Models\Sparepart;
 use App\Models\Pelanggan;
+use App\Support\BookingAccessValidator;
 
 class BookingController extends Controller
 {
-    public function indexPortal()
+    public function indexPortal(BookingAccessValidator $accessValidator)
     {
         if (session('role') !== 'pelanggan' || !session('id_pelanggan')) {
             abort(403);
@@ -22,6 +23,12 @@ class BookingController extends Controller
             'id_pelanggan',
             session('id_pelanggan')
         )->latest()->get();
+
+        foreach ($bookings as $booking) {
+            if (!$accessValidator->customerOwnsBooking($booking)) {
+                abort(403, 'Kamu tidak memiliki akses ke booking ini.');
+            }
+        }
 
         return view('pelanggan.portal', compact('bookings'));
     }
@@ -124,9 +131,6 @@ class BookingController extends Controller
         }
 
         $bookings = Booking::latest()->get();
-
-        // Nama variabel $stocks dipertahankan agar kompatibel
-        // dengan view kasir yang sudah ada.
         $stocks = Sparepart::all();
 
         return view('admin.kasir', compact('bookings', 'stocks'));
@@ -161,8 +165,7 @@ class BookingController extends Controller
 
                 if ($sparepart->jumlah_stok < $qty) {
                     throw ValidationException::withMessages([
-                        'barang_id' =>
-                            'Stok ' . $sparepart->nama_barang .
+                        'barang_id' => 'Stok ' . $sparepart->nama_barang .
                             ' tidak mencukupi.',
                     ]);
                 }
@@ -184,7 +187,7 @@ class BookingController extends Controller
         return back()->with(
             'success',
             'Pembayaran berhasil diproses! Total: Rp ' .
-            number_format($totalBiaya, 0, ',', '.')
+                number_format($totalBiaya, 0, ',', '.')
         );
     }
 

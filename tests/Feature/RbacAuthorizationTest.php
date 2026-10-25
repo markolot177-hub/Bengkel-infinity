@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Models\Booking;
+use App\Support\BookingAccessValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -115,6 +117,25 @@ class RbacAuthorizationTest extends TestCase
         });
     }
 
+    public function test_customer_cannot_access_another_customers_booking(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ]);
+
+        $booking = new Booking([
+            'id_pelanggan' => 2,
+        ]);
+
+        $validator = app(BookingAccessValidator::class);
+
+        $this->assertFalse(
+            $validator->customerOwnsBooking($booking)
+        );
+    }
+
     public function test_guest_cannot_access_api_pelanggan(): void
     {
         $this->getJson('/api/pelanggan')->assertUnauthorized();
@@ -141,5 +162,24 @@ class RbacAuthorizationTest extends TestCase
             'role' => 'pelanggan',
             'id_pelanggan' => 1,
         ])->getJson('/api/pengelola')->assertForbidden();
+    }
+
+    public function test_admin_api_pengelola_does_not_expose_password(): void
+    {
+        DB::table('pengelola')->insert([
+            'nama' => 'Admin Test',
+            'no_hp' => '080000000099',
+            'username' => 'admin_security_test',
+            'password' => bcrypt('password-rahasia'),
+            'role' => 'admin',
+        ]);
+
+        $response = $this->withSession([
+            'logged_in' => true,
+            'role' => 'admin',
+        ])->getJson('/api/pengelola');
+
+        $response->assertOk();
+        $response->assertJsonMissingPath('data.0.password');
     }
 }
