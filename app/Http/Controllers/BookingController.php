@@ -106,6 +106,10 @@ class BookingController extends Controller
 
         $booking = Booking::findOrFail($id);
 
+        if (!in_array($booking->status, ['Menunggu', 'Dikerjakan'], true)) {
+            abort(403, 'Booking ini tidak dapat diubah lagi.');
+        }
+
         $booking->status = $validated['status'];
         $booking->catatan_mekanik = $validated['catatan_mekanik'] ?? null;
 
@@ -152,7 +156,16 @@ class BookingController extends Controller
         ]);
 
         $totalBiaya = DB::transaction(function () use ($validated, $id) {
-            $booking = Booking::findOrFail($id);
+            $booking = Booking::whereKey($id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($booking->status === 'Selesai') {
+                throw ValidationException::withMessages([
+                    'pembayaran' => 'Booking ini sudah selesai atau dibayar.',
+                ]);
+            }
+
             $biayaJasa = (float) ($validated['biaya_jasa'] ?? 0);
             $totalPart = 0;
 
