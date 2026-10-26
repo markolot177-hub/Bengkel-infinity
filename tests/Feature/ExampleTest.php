@@ -46,7 +46,7 @@ class ExampleTest extends TestCase
     public function test_database_connection_error_displays_custom_500_page(): void
     {
         Route::get('/test-database-connection-error', function () {
-            throw new \RuntimeException(
+            throw new \Illuminate\Database\ConnectionException(
                 'Simulated database connection failure'
             );
         });
