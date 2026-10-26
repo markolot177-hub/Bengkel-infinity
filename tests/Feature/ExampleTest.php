@@ -43,6 +43,20 @@ class ExampleTest extends TestCase
         $response->assertSee('Terjadi Kesalahan Server');
     }
 
+    public function test_database_connection_error_displays_custom_500_page(): void
+    {
+        Route::get('/test-database-connection-error', function () {
+            throw new \RuntimeException(
+                'Simulated database connection failure'
+            );
+        });
+
+        $response = $this->get('/test-database-connection-error');
+
+        $response->assertStatus(500);
+        $response->assertSee('Terjadi Kesalahan Server');
+    }
+
     public function test_exception_is_logged(): void
     {
         Log::spy();
