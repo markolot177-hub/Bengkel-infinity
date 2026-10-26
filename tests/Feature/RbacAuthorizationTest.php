@@ -1,0 +1,338 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use App\Models\Booking;
+use App\Support\BookingAccessValidator;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+
+class RbacAuthorizationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guest_cannot_access_booking_servis(): void
+    {
+        $this->get('/booking-servis')->assertRedirect('/');
+    }
+
+    public function test_guest_cannot_access_customer_portal(): void
+    {
+        $this->get('/portal-pelanggan')->assertRedirect('/');
+    }
+
+    public function test_guest_cannot_access_admin_dashboard(): void
+    {
+        $this->get('/dashboard-admin')->assertRedirect('/');
+    }
+
+    public function test_customer_cannot_access_admin_dashboard(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->get('/dashboard-admin')->assertForbidden();
+    }
+
+    public function test_customer_cannot_access_cashier_page(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->get('/kasir')->assertForbidden();
+    }
+
+    public function test_customer_cannot_access_mechanic_workstation(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->get('/workstation-mekanik')->assertForbidden();
+    }
+
+    public function test_customer_portal_only_shows_own_bookings(): void
+    {
+        $customerA = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Test A',
+            'no_hp' => '080000000001',
+            'alamat' => 'Alamat Test A',
+            'username' => 'test_customer_a',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $customerB = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Test B',
+            'no_hp' => '080000000002',
+            'alamat' => 'Alamat Test B',
+            'username' => 'test_customer_b',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $bookingA = DB::table('bookings')->insertGetId([
+            'no_booking' => 'BC-TEST00001',
+            'id_pelanggan' => $customerA,
+            'nopol' => 'D1234AAA',
+            'nama_pelanggan' => 'Pelanggan Test A',
+            'kendaraan' => 'Motor Test A',
+            'jenis_layanan' => 'Servis ringan',
+            'tanggal_kedatangan' => '2026-10-25',
+            'sesi_waktu' => 'Pagi',
+            'keluhan' => 'Booking milik A',
+            'status' => 'Menunggu',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], 'id');
+
+        DB::table('bookings')->insert([
+            'no_booking' => 'BC-TEST00002',
+            'id_pelanggan' => $customerB,
+            'nopol' => 'D5678BBB',
+            'nama_pelanggan' => 'Pelanggan Test B',
+            'kendaraan' => 'Motor Test B',
+            'jenis_layanan' => 'Servis ringan',
+            'tanggal_kedatangan' => '2026-10-25',
+            'sesi_waktu' => 'Siang',
+            'keluhan' => 'Booking milik B',
+            'status' => 'Menunggu',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => $customerA,
+        ])->get('/portal-pelanggan');
+
+        $response->assertOk();
+
+        $response->assertViewHas('bookings', function ($bookings) use ($customerA, $bookingA) {
+            return $bookings->count() === 1
+                && (int) $bookings->first()->id === $bookingA
+                && (int) $bookings->first()->id_pelanggan === $customerA;
+        });
+    }
+
+    public function test_customer_cannot_access_another_customers_booking(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ]);
+
+        $booking = new Booking([
+            'id_pelanggan' => 2,
+        ]);
+
+        $validator = app(BookingAccessValidator::class);
+
+        $this->assertFalse(
+            $validator->customerOwnsBooking($booking)
+        );
+    }
+
+    public function test_guest_cannot_access_api_pelanggan(): void
+    {
+        $this->getJson('/api/pelanggan')->assertUnauthorized();
+    }
+
+    public function test_guest_cannot_access_api_transaksi(): void
+    {
+        $this->getJson('/api/transaksi')->assertUnauthorized();
+    }
+
+    public function test_customer_cannot_access_admin_api_pelanggan(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->getJson('/api/pelanggan')->assertForbidden();
+    }
+
+    public function test_customer_cannot_access_admin_api_pengelola(): void
+    {
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'pelanggan',
+            'id_pelanggan' => 1,
+        ])->getJson('/api/pengelola')->assertForbidden();
+    }
+
+    public function test_admin_api_pengelola_does_not_expose_password(): void
+    {
+        DB::table('pengelola')->insert([
+            'nama' => 'Admin Test',
+            'no_hp' => '080000000099',
+            'username' => 'admin_security_test',
+            'password' => bcrypt('password-rahasia'),
+            'role' => 'admin',
+        ]);
+
+        $response = $this->withSession([
+            'logged_in' => true,
+            'role' => 'admin',
+        ])->getJson('/api/pengelola');
+
+        $response->assertOk();
+        $response->assertJsonMissingPath('data.0.password');
+    }
+
+    public function test_mechanic_cannot_update_another_mechanics_service(): void
+    {
+        $customerId = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Tes IDOR',
+            'no_hp' => '080000000101',
+            'alamat' => 'Alamat Tes',
+            'username' => 'pelanggan_idor_test',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $vehicleId = DB::table('kendaraan')->insertGetId([
+            'id_pelanggan' => $customerId,
+            'no_polisi' => 'D1234XYZ',
+            'merk' => 'Honda',
+            'tipe' => 'Beat',
+            'tahun' => 2024,
+            'warna' => 'Hitam',
+        ], 'id_kendaraan');
+
+        $mechanicA = DB::table('pengelola')->insertGetId([
+            'nama' => 'Mekanik A',
+            'no_hp' => '080000000102',
+            'username' => 'mekanik_idor_a',
+            'password' => bcrypt('password-test'),
+            'role' => 'mekanik',
+        ], 'id_pengelola');
+
+        $mechanicB = DB::table('pengelola')->insertGetId([
+            'nama' => 'Mekanik B',
+            'no_hp' => '080000000103',
+            'username' => 'mekanik_idor_b',
+            'password' => bcrypt('password-test'),
+            'role' => 'mekanik',
+        ], 'id_pengelola');
+
+        $serviceId = DB::table('servis')->insertGetId([
+            'id_kendaraan' => $vehicleId,
+            'id_mekanik' => $mechanicB,
+            'tgl_servis' => '2026-10-25',
+            'keluhan' => 'Servis milik mekanik B',
+            'jenis_servis' => 'Servis ringan',
+            'status' => 'Menunggu',
+            'total_biaya' => 0,
+        ], 'id_servis');
+
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'mekanik',
+            'id_pengelola' => $mechanicA,
+        ])->putJson('/api/servis/' . $serviceId, [
+            'status' => 'Diproses',
+        ])->assertForbidden();
+
+        $this->assertSame(
+            'Menunggu',
+            DB::table('servis')
+                ->where('id_servis', $serviceId)
+                ->value('status')
+        );
+    }
+
+    public function test_cashier_cannot_process_completed_booking_twice(): void
+    {
+        $customerId = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Tes Pembayaran',
+            'no_hp' => '080000000201',
+            'alamat' => 'Alamat Tes',
+            'username' => 'pelanggan_bayar_test',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $bookingId = DB::table('bookings')->insertGetId([
+            'id_pelanggan' => $customerId,
+            'no_booking' => 'BC-PAYTEST001',
+            'nopol' => 'D1234PAY',
+            'nama_pelanggan' => 'Pelanggan Tes Pembayaran',
+            'kendaraan' => 'Motor Tes',
+            'jenis_layanan' => 'Servis ringan',
+            'tanggal_kedatangan' => '2026-10-26',
+            'sesi_waktu' => 'Pagi',
+            'keluhan' => 'Tes pembayaran',
+            'status' => 'Selesai',
+            'total_biaya' => 100000,
+            'metode_pembayaran' => 'Tunai',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], 'id');
+
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'kasir',
+        ])->post('/kasir/bayar/' . $bookingId, [
+            'biaya_jasa' => 100000,
+            'metode_pembayaran' => 'Tunai',
+        ])->assertSessionHasErrors('pembayaran');
+
+        $this->assertSame(
+            'Selesai',
+            DB::table('bookings')
+                ->where('id', $bookingId)
+                ->value('status')
+        );
+
+        $this->assertEquals(
+            100000,
+            DB::table('bookings')
+                ->where('id', $bookingId)
+                ->value('total_biaya')
+        );
+    }
+
+    public function test_mechanic_cannot_update_completed_booking(): void
+    {
+        $customerId = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Tes Mekanik',
+            'no_hp' => '080000000202',
+            'alamat' => 'Alamat Tes',
+            'username' => 'pelanggan_mekanik_test',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $bookingId = DB::table('bookings')->insertGetId([
+            'id_pelanggan' => $customerId,
+            'no_booking' => 'BC-MECHTEST01',
+            'nopol' => 'D1234MEC',
+            'nama_pelanggan' => 'Pelanggan Tes Mekanik',
+            'kendaraan' => 'Motor Tes',
+            'jenis_layanan' => 'Servis ringan',
+            'tanggal_kedatangan' => '2026-10-26',
+            'sesi_waktu' => 'Pagi',
+            'keluhan' => 'Tes progres mekanik',
+            'status' => 'Selesai',
+            'total_biaya' => 100000,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], 'id');
+
+        $this->withSession([
+            'logged_in' => true,
+            'role' => 'mekanik',
+            'id_pengelola' => 1,
+        ])->post('/workstation-mekanik/update/' . $bookingId, [
+            'status' => 'Dikerjakan',
+        ])->assertForbidden();
+
+        $this->assertSame(
+            'Selesai',
+            DB::table('bookings')
+                ->where('id', $bookingId)
+                ->value('status')
+        );
+    }
+}
