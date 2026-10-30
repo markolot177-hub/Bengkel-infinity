@@ -335,4 +335,164 @@ class RbacAuthorizationTest extends TestCase
                 ->value('status')
         );
     }
+
+    public function test_cashier_can_retry_unpaid_transaction_until_paid(): void
+    {
+        $customerId = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Tes Transaksi API',
+            'no_hp' => '080000000301',
+            'alamat' => 'Alamat Tes',
+            'username' => 'pelanggan_api_retry',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $vehicleId = DB::table('kendaraan')->insertGetId([
+            'id_pelanggan' => $customerId,
+            'no_polisi' => 'D1234TRY',
+            'merk' => 'Honda',
+            'tipe' => 'Beat',
+            'tahun' => 2024,
+            'warna' => 'Hitam',
+        ], 'id_kendaraan');
+
+        $cashierId = DB::table('pengelola')->insertGetId([
+            'nama' => 'Kasir Tes Retry',
+            'no_hp' => '080000000302',
+            'username' => 'kasir_api_retry',
+            'password' => bcrypt('password-test'),
+            'role' => 'kasir',
+        ], 'id_pengelola');
+
+        $serviceId = DB::table('servis')->insertGetId([
+            'id_kendaraan' => $vehicleId,
+            'id_mekanik' => $cashierId,
+            'tgl_servis' => '2026-10-30',
+            'keluhan' => 'Tes pembayaran ulang',
+            'jenis_servis' => 'Servis ringan',
+            'status' => 'Diproses',
+            'total_biaya' => 100000,
+        ], 'id_servis');
+
+        $session = [
+            'logged_in' => true,
+            'role' => 'kasir',
+            'id_pengelola' => $cashierId,
+        ];
+
+        $payload = [
+            'id_servis' => $serviceId,
+            'tgl_transaksi' => '2026-10-30',
+            'metode_pembayaran' => 'Tunai',
+            'jumlah_bayar' => 50000,
+            'status_pembayaran' => 'Belum Lunas',
+        ];
+
+        $this->withSession($session)
+            ->postJson('/api/transaksi', $payload)
+            ->assertCreated();
+
+        $payload['jumlah_bayar'] = 100000;
+        $payload['status_pembayaran'] = 'Lunas';
+
+        $this->withSession($session)
+            ->postJson('/api/transaksi', $payload)
+            ->assertCreated();
+
+        $this->assertSame(
+            1,
+            DB::table('transaksi')
+                ->where('id_servis', $serviceId)
+                ->count()
+        );
+
+        $this->assertSame(
+            'Lunas',
+            DB::table('transaksi')
+                ->where('id_servis', $serviceId)
+                ->value('status_pembayaran')
+        );
+
+        $this->assertSame(
+            'Selesai',
+            DB::table('servis')
+                ->where('id_servis', $serviceId)
+                ->value('status')
+        );
+    }
+
+    public function test_cashier_cannot_pay_again_after_transaction_is_paid(): void
+    {
+        $customerId = DB::table('pelanggan')->insertGetId([
+            'nama' => 'Pelanggan Tes Transaksi Lunas',
+            'no_hp' => '080000000311',
+            'alamat' => 'Alamat Tes',
+            'username' => 'pelanggan_api_paid',
+            'password' => bcrypt('password-test'),
+        ], 'id_pelanggan');
+
+        $vehicleId = DB::table('kendaraan')->insertGetId([
+            'id_pelanggan' => $customerId,
+            'no_polisi' => 'D1234LNS',
+            'merk' => 'Honda',
+            'tipe' => 'Beat',
+            'tahun' => 2024,
+            'warna' => 'Hitam',
+        ], 'id_kendaraan');
+
+        $cashierId = DB::table('pengelola')->insertGetId([
+            'nama' => 'Kasir Tes Lunas',
+            'no_hp' => '080000000312',
+            'username' => 'kasir_api_paid',
+            'password' => bcrypt('password-test'),
+            'role' => 'kasir',
+        ], 'id_pengelola');
+
+        $serviceId = DB::table('servis')->insertGetId([
+            'id_kendaraan' => $vehicleId,
+            'id_mekanik' => $cashierId,
+            'tgl_servis' => '2026-10-30',
+            'keluhan' => 'Tes penolakan pembayaran ulang',
+            'jenis_servis' => 'Servis ringan',
+            'status' => 'Diproses',
+            'total_biaya' => 100000,
+        ], 'id_servis');
+
+        $session = [
+            'logged_in' => true,
+            'role' => 'kasir',
+            'id_pengelola' => $cashierId,
+        ];
+
+        $payload = [
+            'id_servis' => $serviceId,
+            'tgl_transaksi' => '2026-10-30',
+            'metode_pembayaran' => 'Tunai',
+            'jumlah_bayar' => 100000,
+            'status_pembayaran' => 'Lunas',
+        ];
+
+        $this->withSession($session)
+            ->postJson('/api/transaksi', $payload)
+            ->assertCreated();
+
+        $payload['jumlah_bayar'] = 150000;
+
+        $this->withSession($session)
+            ->postJson('/api/transaksi', $payload)
+            ->assertStatus(422);
+
+        $this->assertSame(
+            1,
+            DB::table('transaksi')
+                ->where('id_servis', $serviceId)
+                ->count()
+        );
+
+        $this->assertSame(
+            'Lunas',
+            DB::table('transaksi')
+                ->where('id_servis', $serviceId)
+                ->value('status_pembayaran')
+        );
+    }
 }

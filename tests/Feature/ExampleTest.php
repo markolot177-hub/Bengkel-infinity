@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 
 class ExampleTest extends TestCase
@@ -46,7 +47,7 @@ class ExampleTest extends TestCase
     public function test_database_connection_error_displays_custom_500_page(): void
     {
         Route::get('/test-database-connection-error', function () {
-            throw new \Illuminate\Database\ConnectionException(
+            throw new \PDOException(
                 'Simulated database connection failure'
             );
         });
@@ -55,6 +56,38 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(500);
         $response->assertSee('Terjadi Kesalahan Server');
+    }
+
+    public function test_failed_database_connection_is_handled_gracefully(): void
+    {
+        config([
+            'database.connections.test_broken' => [
+                'driver' => 'mysql',
+                'host' => '127.0.0.1',
+                'port' => '1',
+                'database' => 'db_test',
+                'username' => 'test',
+                'password' => 'test',
+                'unix_socket' => '',
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ],
+        ]);
+
+        DB::purge('test_broken');
+
+        try {
+            DB::connection('test_broken')->getPdo();
+
+            $this->fail('Koneksi seharusnya gagal.');
+        } catch (\PDOException $e) {
+            $this->assertStringContainsString('2002', $e->getMessage());
+        } finally {
+            DB::purge('test_broken');
+        }
     }
 
     public function test_exception_is_logged(): void
@@ -82,3 +115,4 @@ class ExampleTest extends TestCase
             ->once();
     }
 }
+

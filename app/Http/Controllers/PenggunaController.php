@@ -9,38 +9,70 @@ use Illuminate\Support\Facades\Hash;
 
 class PenggunaController extends Controller
 {
-    // Tampilkan daftar semua pengguna (Pengelola & Pelanggan/Member)
+    // Tampilkan daftar pengelola dan pelanggan
     public function index()
     {
         $penggunas = Pengelola::all();
         $pelanggans = Pelanggan::all();
-        
-        return view('admin.pengguna.index', compact('penggunas', 'pelanggans'));
+
+        return view('admin.pengguna.index', compact(
+            'penggunas',
+            'pelanggans'
+        ));
     }
 
-    // Simpan akun pengelola baru (Admin, Kasir, Mekanik)
+    // Simpan akun berdasarkan role yang dipilih
     public function store(Request $request)
     {
         $request->validate([
             'nama' => 'required|string|max:100',
             'no_hp' => 'required|string|max:20',
             'username' => 'required|string|max:50',
-            'password' => 'required|string',
-            'role' => 'required|string',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:admin,kasir,mekanik,pelanggan',
+        ]);
+
+        // Pelanggan disimpan ke tabel pelanggan
+        if ($request->role === 'pelanggan') {
+            $request->validate([
+                'username' => 'unique:pelanggan,username',
+                'alamat' => 'nullable|string',
+            ]);
+
+            Pelanggan::create([
+                'nama' => $request->nama,
+                'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
+                'username' => $request->username,
+                'password' => Hash::make($request->password),
+            ]);
+
+            return back()->with(
+                'success',
+                'Akun pelanggan berhasil ditambahkan!'
+            );
+        }
+
+        // Cegah username staf duplikat
+        $request->validate([
+            'username' => 'unique:pengelola,username',
         ]);
 
         Pengelola::create([
             'nama' => $request->nama,
             'no_hp' => $request->no_hp,
             'username' => $request->username,
-            'password' => Hash::make($request->password), // Password di-hash agar aman
+            'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
 
-        return back()->with('success', 'Akun pengelola berhasil ditambahkan dan disimpan!');
+        return back()->with(
+            'success',
+            'Akun pengelola berhasil ditambahkan!'
+        );
     }
 
-    // Simpan akun Pelanggan baru yang didaftarkan oleh Admin (Member Bengkel)
+    // Tetap sediakan route penyimpanan pelanggan yang lama
     public function storePelanggan(Request $request)
     {
         $request->validate([
@@ -56,32 +88,29 @@ class PenggunaController extends Controller
             'no_hp' => $request->no_hp,
             'alamat' => $request->alamat,
             'username' => $request->username,
-            'password' => Hash::make($request->password), // Password di-hash
+            'password' => Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Akun member pelanggan berhasil didaftarkan oleh admin!');
+        return back()->with(
+            'success',
+            'Akun member pelanggan berhasil didaftarkan!'
+        );
     }
 
     // Hapus akun pengelola
     public function destroy($id)
     {
-        $pengguna = Pengelola::where('id_pengelola', $id)->first();
-
-        if ($pengguna) {
-            $pengguna->delete();
-        }
+        $pengguna = Pengelola::where('id_pengelola', $id)->firstOrFail();
+        $pengguna->delete();
 
         return back()->with('success', 'Akun pengelola berhasil dihapus!');
     }
 
-    // Hapus data/akun pelanggan
+    // Hapus akun pelanggan
     public function destroyPelanggan($id)
     {
-        $pelanggan = Pelanggan::where('id_pelanggan', $id)->first();
-
-        if ($pelanggan) {
-            $pelanggan->delete();
-        }
+        $pelanggan = Pelanggan::where('id_pelanggan', $id)->firstOrFail();
+        $pelanggan->delete();
 
         return back()->with('success', 'Data pelanggan berhasil dihapus!');
     }

@@ -42,8 +42,8 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
             <h2 class="font-bold text-slate-800 text-sm">Sistem Point of Sale (POS) & Kasir</h2>
             <div class="flex items-center gap-3">
-    <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
-</div>
+                <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+            </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
@@ -163,13 +163,25 @@
                                                             <input type="number" name="biaya_jasa" id="biaya-jasa-{{ $b->id }}" value="0" min="0" oninput="updateTotal({{ $b->id }})" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
                                                         </div>
 
-                                                        <div class="mb-5">
+                                                        <div class="mb-3">
                                                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Metode Pembayaran:</label>
-                                                            <select name="metode_pembayaran" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
+                                                            <select name="metode_pembayaran" id="metode-{{ $b->id }}" onchange="toggleCashInput({{ $b->id }})" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
                                                                 <option value="Tunai">Tunai / Cash</option>
                                                                 <option value="QRIS">QRIS</option>
                                                                 <option value="Transfer Bank">Transfer Bank / VA</option>
                                                             </select>
+                                                        </div>
+
+                                                        <!-- INPUT UANG TUNAI & KEMBALIAN (Hanya muncul jika metode Tunai) -->
+                                                        <div id="wrapper-cash-{{ $b->id }}" class="space-y-3 mb-4 bg-slate-50 border border-slate-200 p-3 rounded-lg">
+                                                            <div>
+                                                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Uang Diberikan Pelanggan (Rp):</label>
+                                                                <input type="number" id="uang-bayar-{{ $b->id }}" min="0" oninput="hitungKembalian({{ $b->id }})" placeholder="Contoh: 100000" class="w-full bg-white border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500 font-bold">
+                                                            </div>
+                                                            <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                                                                <span class="font-bold text-slate-600 text-xs">Uang Kembalian:</span>
+                                                                <span id="label-kembalian-{{ $b->id }}" class="font-black text-emerald-600 text-base">Rp 0</span>
+                                                            </div>
                                                         </div>
 
                                                         <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 flex justify-between items-center mb-4">
@@ -205,6 +217,8 @@
             const row = document.getElementById('pos-' + id);
             if (row) {
                 row.classList.toggle('hidden');
+                // Saat panel dibuka, periksa status metode pembayaran
+                toggleCashInput(id);
             }
         }
 
@@ -259,6 +273,49 @@
             const grandTotalEl = document.getElementById('grand-total-' + bookingId);
             if(grandTotalEl) {
                 grandTotalEl.innerText = "Rp " + grandTotal.toLocaleString('id-ID');
+            }
+
+            // Hitung ulang kembalian jika user mengubah sparepart / biaya jasa
+            hitungKembalian(bookingId);
+        }
+
+        function toggleCashInput(bookingId) {
+            const metodeSelect = document.getElementById('metode-' + bookingId);
+            const wrapperCash = document.getElementById('wrapper-cash-' + bookingId);
+
+            if (metodeSelect && wrapperCash) {
+                if (metodeSelect.value === 'Tunai') {
+                    wrapperCash.classList.remove('hidden');
+                    hitungKembalian(bookingId); // Hitung kembalian otomatis saat panel cash terbuka
+                } else {
+                    wrapperCash.classList.add('hidden');
+                    document.getElementById('uang-bayar-' + bookingId).value = '';
+                    document.getElementById('label-kembalian-' + bookingId).innerText = 'Rp 0';
+                }
+            }
+        }
+
+        function hitungKembalian(bookingId) {
+            const grandTotalEl = document.getElementById('grand-total-' + bookingId);
+            if (!grandTotalEl) return;
+
+            const grandTotalText = grandTotalEl.innerText.replace(/[^0-9]/g, '');
+            const grandTotal = parseInt(grandTotalText) || 0;
+
+            const uangBayarInput = document.getElementById('uang-bayar-' + bookingId);
+            const uangBayar = parseInt(uangBayarInput.value) || 0;
+
+            const labelKembalian = document.getElementById('label-kembalian-' + bookingId);
+            if (!labelKembalian) return;
+
+            if (uangBayar >= grandTotal) {
+                const kembalian = uangBayar - grandTotal;
+                labelKembalian.innerText = "Rp " + kembalian.toLocaleString('id-ID');
+                labelKembalian.className = "font-black text-emerald-600 text-base";
+            } else {
+                const kurang = grandTotal - uangBayar;
+                labelKembalian.innerText = "Kurang: Rp " + kurang.toLocaleString('id-ID');
+                labelKembalian.className = "font-black text-red-600 text-xs";
             }
         }
     </script>
