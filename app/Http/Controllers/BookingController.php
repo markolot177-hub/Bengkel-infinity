@@ -4,232 +4,258 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use App\Models\Booking;
-use App\Models\Sparepart;
-use App\Models\Pelanggan;
-use App\Support\BookingAccessValidator;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    public function indexPortal(BookingAccessValidator $accessValidator)
+    /**
+     * 🏠 DASHBOARD UTAMA ADMIN (Omset, Grafik 7 Hari, Stok, Pelanggan)
+     */
+    public function indexDashboardAdmin()
     {
-        if (session('role') !== 'pelanggan' || !session('id_pelanggan')) {
-            abort(403);
+        // 1. Omset Hari Ini
+        $omsetHariIni = Schema::hasTable('transaksi')
+            ? (DB::table('transaksi')
+                ->whereDate('tgl_transaksi', Carbon::today())
+                ->where('status_pembayaran', 'Lunas')
+                ->sum(DB::raw('COALESCE(total_biaya, 0)')) ?? 0)
+            : 0;
+
+        // 2. Data Sparepart (Stok Total & Menipis)
+        $namaTabelStok = Schema::hasTable('spareparts') ? 'spareparts' : (Schema::hasTable('sparepart') ? 'sparepart' : null);
+        $totalStok = 0;
+        $stokMenipis = 0;
+        $barangHampirHabis = collect();
+
+        if ($namaTabelStok) {
+            $totalStok = DB::table($namaTabelStok)->sum('jumlah_stok') ?? 0;
+            $stokMenipis = DB::table($namaTabelStok)->where('jumlah_stok', '<=', 5)->count();
+            $barangHampirHabis = DB::table($namaTabelStok)->where('jumlah_stok', '<=', 5)->get();
         }
 
-        $bookings = Booking::where(
-            'id_pelanggan',
-            session('id_pelanggan')
-        )->latest()->get();
+        // 3. Daftar Pelanggan (Pengaman jika tabel pelanggan ada)
+        $pelanggan = Schema::hasTable('pelanggan') ? DB::table('pelanggan')->get() : collect();
 
-        foreach ($bookings as $booking) {
-            if (!$accessValidator->customerOwnsBooking($booking)) {
-                abort(403, 'Kamu tidak memiliki akses ke booking ini.');
+        // 4. Grafik Pendapatan (7 Hari Terakhir)
+        $namaHariMap = [
+            'Mon' => 'SEN', 'Tue' => 'SEL', 'Wed' => 'RAB', 'Thu' => 'KAM',
+            'Fri' => 'JUM', 'Sat' => 'SAB', 'Sun' => 'MIN',
+        ];
+
+        $grafik = [];
+        $maxOmset = 1;
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $total = Schema::hasTable('transaksi')
+                ? (DB::table('transaksi')
+                    ->whereDate('tgl_transaksi', $date->toDateString())
+                    ->where('status_pembayaran', 'Lunas')
+                    ->sum(DB::raw('COALESCE(total_biaya, 0)')) ?? 0)
+                : 0;
+
+            if ($total > $maxOmset) {
+                $maxOmset = $total;
             }
+
+            $dayKey = $date->format('D');
+            $grafik[] = [
+                'hari' => $namaHariMap[$dayKey] ?? strtoupper($dayKey),
+                'total' => $total,
+                'total_format' => 'Rp ' . number_format($total, 0, ',', '.'),
+            ];
         }
 
-        return view('pelanggan.portal', compact('bookings'));
+        foreach ($grafik as &$g) {
+            $g['tinggi_persen'] = $maxOmset > 0 ? max(10, round(($g['total'] / $maxOmset) * 100)) : 10;
+        }
+
+        $viewName = view()->exists('dashboard-admin')
+            ? 'dashboard-admin'
+            : (view()->exists('admin.dashboard') ? 'admin.dashboard' : 'dashboard-admin');
+
+        return view($viewName, compact(
+            'omsetHariIni', 'totalStok', 'stokMenipis', 'barangHampirHabis', 'pelanggan', 'grafik'
+        ));
     }
 
-    public function create()
-    {
-        if (session('role') !== 'pelanggan' || !session('id_pelanggan')) {
-            abort(403);
-        }
-
-        return view('pelanggan.booking');
-    }
-
-    public function store(Request $request)
-    {
-        if (session('role') !== 'pelanggan' || !session('id_pelanggan')) {
-            abort(403);
-        }
-
-        $pelanggan = Pelanggan::findOrFail(session('id_pelanggan'));
-
-        $validated = $request->validate([
-            'nopol' => 'required|string|max:20',
-            'kendaraan' => 'required|string|max:100',
-            'jenis_layanan' => 'required|string|max:100',
-            'tanggal_kedatangan' => 'nullable|date',
-            'sesi_waktu' => 'required|string|max:50',
-            'keluhan' => 'nullable|string',
-        ]);
-
-        Booking::create([
-            'id_pelanggan' => $pelanggan->id_pelanggan,
-            'no_booking' => 'BC-' . Str::upper(Str::random(10)),
-            'nopol' => $validated['nopol'],
-            'nama_pelanggan' => $pelanggan->nama,
-            'kendaraan' => $validated['kendaraan'],
-            'jenis_layanan' => $validated['jenis_layanan'],
-            'tanggal_kedatangan' => $validated['tanggal_kedatangan'] ?? date('Y-m-d'),
-            'sesi_waktu' => $validated['sesi_waktu'],
-            'keluhan' => $validated['keluhan'] ?? '-',
-            'status' => 'Menunggu',
-        ]);
-
-        return back()->with(
-            'success',
-            'Data servis berhasil ditambahkan ke antrean!'
-        );
-    }
-
-    public function indexMekanik()
-    {
-        if (session('role') !== 'mekanik') {
-            abort(403, 'Akses hanya untuk mekanik.');
-        }
-
-        $bookings = Booking::whereIn(
-            'status',
-            ['Menunggu', 'Dikerjakan']
-        )->latest()->get();
-
-        return view('mekanik.workstation', compact('bookings'));
-    }
-
-    public function updateProgres(Request $request, $id)
-    {
-        if (session('role') !== 'mekanik') {
-            abort(403, 'Akses hanya untuk mekanik.');
-        }
-
-        $validated = $request->validate([
-            'status' => 'required|in:Menunggu,Dikerjakan,Selesai',
-            'catatan_mekanik' => 'nullable|string',
-            'lampiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
-
-        $booking = Booking::findOrFail($id);
-
-        if (!in_array($booking->status, ['Menunggu', 'Dikerjakan'], true)) {
-            abort(403, 'Booking ini tidak dapat diubah lagi.');
-        }
-
-        $booking->status = $validated['status'];
-        $booking->catatan_mekanik = $validated['catatan_mekanik'] ?? null;
-
-        if ($request->hasFile('lampiran')) {
-            $path = $request->file('lampiran')
-                ->store('lampiran-mekanik', 'public');
-
-            $booking->lampiran = $path;
-        }
-
-        $booking->save();
-
-        return back()->with(
-            'success',
-            'Progres pengerjaan berhasil diperbarui!'
-        );
-    }
-
+    /**
+     * Menampilkan halaman kasir POS
+     */
     public function indexKasir()
     {
-        if (session('role') !== 'kasir') {
-            abort(403, 'Akses hanya untuk kasir.');
+        $bookings = Schema::hasTable('bookings')
+                    ? DB::table('bookings')->orderBy('created_at', 'desc')->get()
+                    : collect();
+
+        $stocks = collect();
+        if (Schema::hasTable('sparepart')) {
+            $stocks = DB::table('sparepart')->get();
+        } elseif (Schema::hasTable('spareparts')) {
+            $stocks = DB::table('spareparts')->get();
         }
 
-        $bookings = Booking::latest()->get();
-        $stocks = Sparepart::all();
+        if (view()->exists('kasir')) {
+            return view('kasir', compact('bookings', 'stocks'));
+        } elseif (view()->exists('kasir.index')) {
+            return view('kasir.index', compact('bookings', 'stocks'));
+        }
 
         return view('admin.kasir', compact('bookings', 'stocks'));
     }
 
-    public function prosesPembayaran(Request $request, $id)
+    /**
+     * Menampilkan workstation mekanik
+     */
+    public function indexMekanik()
     {
-        if (session('role') !== 'kasir') {
-            abort(403, 'Akses hanya untuk kasir.');
-        }
+        $bookings = Schema::hasTable('bookings')
+                    ? DB::table('bookings')->whereIn('status', ['Menunggu', 'Dikerjakan'])->get()
+                    : collect();
 
-        $validated = $request->validate([
-            'biaya_jasa' => 'nullable|numeric|min:0',
-            'metode_pembayaran' => 'nullable|in:Tunai,Transfer,QRIS',
-            'barang_id' => 'nullable|array',
-            'barang_id.*' => 'integer|distinct|exists:sparepart,id',
-            'qty' => 'nullable|array',
-            'qty.*' => 'nullable|integer|min:1',
-        ]);
-
-        $totalBiaya = DB::transaction(function () use ($validated, $id) {
-            $booking = Booking::whereKey($id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($booking->status === 'Selesai') {
-                throw ValidationException::withMessages([
-                    'pembayaran' => 'Booking ini sudah selesai atau dibayar.',
-                ]);
-            }
-
-            $biayaJasa = (float) ($validated['biaya_jasa'] ?? 0);
-            $totalPart = 0;
-
-            foreach ($validated['barang_id'] ?? [] as $index => $barangId) {
-                $qty = (int) ($validated['qty'][$index] ?? 1);
-
-                $sparepart = Sparepart::whereKey($barangId)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                if ($sparepart->jumlah_stok < $qty) {
-                    throw ValidationException::withMessages([
-                        'barang_id' => 'Stok ' . $sparepart->nama_barang .
-                            ' tidak mencukupi.',
-                    ]);
-                }
-
-                $totalPart += $sparepart->harga_jual * $qty;
-                $sparepart->jumlah_stok -= $qty;
-                $sparepart->save();
-            }
-
-            $booking->total_biaya = $biayaJasa + $totalPart;
-            $booking->metode_pembayaran =
-                $validated['metode_pembayaran'] ?? 'Tunai';
-            $booking->status = 'Selesai';
-            $booking->save();
-
-            return $booking->total_biaya;
-        });
-
-        return back()->with(
-            'success',
-            'Pembayaran berhasil diproses! Total: Rp ' .
-                number_format($totalBiaya, 0, ',', '.')
-        );
+        return view('mekanik.workstation', compact('bookings'));
     }
 
-    public function laporanPendapatan()
+    /**
+     * Update progres oleh mekanik
+     */
+    public function updateProgres(Request $request, $id)
+{
+    $validated = $request->validate([
+        'status' => 'required|in:Menunggu,Dikerjakan,Selesai',
+        'catatan_mekanik' => 'nullable|string|max:1000',
+        'lampiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+    ]);
+
+    $booking = DB::table('bookings')
+    ->where('id', $id)
+    ->first();
+
+    if (!$booking) {
+        abort(404, 'Booking tidak ditemukan.');
+    }
+
+    $data = [
+        'status' => $validated['status'],
+        'catatan_mekanik' => $validated['catatan_mekanik'] ?? null,
+        'updated_at' => now(),
+    ];
+
+    if ($request->hasFile('lampiran')) {
+        $data['lampiran'] = $request->file('lampiran')
+            ->store('lampiran-mekanik', 'local');
+    }
+
+    DB::table('bookings')
+        ->where('id', $booking->id)
+        ->update($data);
+
+    return redirect()->back()
+        ->with('success', 'Progres servis berhasil diperbarui!');
+}
+
+    /**
+     * Menampilkan portal pelanggan
+     */
+    public function indexPortal()
     {
-        if (session('role') !== 'admin') {
-            abort(403, 'Akses hanya untuk admin.');
+        $bookings = Schema::hasTable('bookings') ? DB::table('bookings')->get() : collect();
+        return view('pelanggan.portal', compact('bookings'));
+    }
+
+    /**
+     * Halaman form booking servis
+     */
+    public function create()
+    {
+        return view('pelanggan.booking');
+    }
+
+    /**
+     * Simpan data booking/antrean baru (termasuk walk-in kasir)
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nopol' => 'required|string',
+            'nama_pelanggan' => 'required|string',
+            'kendaraan' => 'required|string',
+            'jenis_layanan' => 'required|string',
+        ]);
+
+        DB::table('bookings')->insert([
+            'no_booking' => 'BC-' . strtoupper(Str::random(8)),
+            'nopol' => $request->nopol,
+            'nama_pelanggan' => $request->nama_pelanggan,
+            'kendaraan' => $request->kendaraan,
+            'jenis_layanan' => $request->jenis_layanan,
+            'tanggal_kedatangan' => $request->tanggal_kedatangan ?? date('Y-m-d'),
+            'sesi_waktu' => $request->sesi_waktu ?? 'Langsung',
+            'status' => 'Menunggu',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Kendaraan berhasil dimasukkan ke antrean!');
+    }
+
+    /**
+     * 📊 LAPORAN KEUANGAN DAN PENDAPATAN (Bisa Filter Tanggal)
+     */
+    public function laporanPendapatan(Request $request)
+    {
+        $tglMulai = $request->input('tgl_mulai');
+        $tglSelesai = $request->input('tgl_selesai');
+
+        $totalUangHarian = Schema::hasTable('transaksi')
+                            ? DB::table('transaksi')
+                                ->whereDate('tgl_transaksi', Carbon::today())
+                                ->where('status_pembayaran', 'Lunas')
+                                ->sum(DB::raw('COALESCE(total_biaya, 0)'))
+                            : 0;
+
+        $totalOmsetBulanIni = Schema::hasTable('transaksi')
+                                ? DB::table('transaksi')
+                                   ->whereMonth('tgl_transaksi', Carbon::now()->month)
+                                   ->whereYear('tgl_transaksi', Carbon::now()->year)
+                                   ->where('status_pembayaran', 'Lunas')
+                                   ->sum(DB::raw('COALESCE(total_biaya, 0)'))
+                                : 0;
+
+        $totalSemuaOmset = Schema::hasTable('transaksi')
+                            ? DB::table('transaksi')
+                                ->where('status_pembayaran', 'Lunas')
+                                ->sum(DB::raw('COALESCE(total_biaya, 0)'))
+                            : 0;
+
+        $query = Schema::hasTable('transaksi')
+                    ? DB::table('transaksi')
+                        ->leftJoin('bookings', 'transaksi.id_servis', '=', 'bookings.id')
+                        ->select(
+                            'transaksi.*',
+                            'bookings.nopol',
+                            'bookings.nama_pelanggan',
+                            'bookings.kendaraan',
+                            'bookings.jenis_layanan'
+                        )
+                        ->where('transaksi.status_pembayaran', 'Lunas')
+                    : null;
+
+        if ($query && $tglMulai && $tglSelesai) {
+            $query->whereBetween(DB::raw('DATE(transaksi.tgl_transaksi)'), [$tglMulai, $tglSelesai]);
         }
 
-        $transaksiSelesai = Booking::where(
-            'status',
-            'Selesai'
-        )->latest()->get();
+        $transaksiSelesai = $query ? $query->orderBy('transaksi.tgl_transaksi', 'desc')->get() : collect();
 
-        $totalUangHarian = $transaksiSelesai
-            ->where('updated_at', '>=', now()->startOfDay())
-            ->sum('total_biaya');
+        // Hitung total khusus hasil filter
+        $totalHasilFilter = $transaksiSelesai->sum('total_biaya');
 
-        $totalOmsetBulanIni = $transaksiSelesai
-            ->where('updated_at', '>=', now()->startOfMonth())
-            ->sum('total_biaya');
+        if (view()->exists('keuangan')) {
+            return view('keuangan', compact('totalUangHarian', 'totalOmsetBulanIni', 'totalSemuaOmset', 'transaksiSelesai', 'tglMulai', 'tglSelesai', 'totalHasilFilter'));
+        }
 
-        $totalSemuaOmset = $transaksiSelesai->sum('total_biaya');
-
-        return view('admin.keuangan', compact(
-            'transaksiSelesai',
-            'totalUangHarian',
-            'totalOmsetBulanIni',
-            'totalSemuaOmset'
-        ));
+        return view('admin.keuangan', compact('totalUangHarian', 'totalOmsetBulanIni', 'totalSemuaOmset', 'transaksiSelesai', 'tglMulai', 'tglSelesai', 'totalHasilFilter'));
     }
 }

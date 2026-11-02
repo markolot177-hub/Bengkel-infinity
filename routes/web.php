@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\SparepartController;
 use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\KasirController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +23,6 @@ Route::match(['get', 'post'], '/login-proses', [AuthController::class, 'login'])
 Route::get('/logout', [AuthController::class, 'logout'])
     ->middleware('checklogin')
     ->name('logout');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -82,9 +82,9 @@ Route::middleware('checklogin')->group(function () {
         ->middleware('role:admin')
         ->name('dashboard.admin');
 
-
     /*
-    | Pengelolaan Pengguna dan Pelanggan oleh Admin
+    | Pengelolaan Pengguna dan Pelanggan
+    | Khusus Admin
     */
 
     Route::middleware('role:admin')->group(function () {
@@ -104,7 +104,15 @@ Route::middleware('checklogin')->group(function () {
         Route::delete('/admin/pelanggan/{id}', [PenggunaController::class, 'destroyPelanggan'])
             ->whereNumber('id')
             ->name('admin.pelanggan.destroy');
+    });
 
+    /*
+    | Laporan Keuangan dan Manajemen Sparepart
+    | Bisa diakses Admin dan Kasir
+    */
+
+    Route::middleware('role:admin,kasir')->group(function () {
+        // Mengarahkan route laporan-pendapatan ke BookingController
         Route::get('/laporan-pendapatan', [BookingController::class, 'laporanPendapatan'])
             ->name('keuangan.admin');
 
@@ -117,12 +125,18 @@ Route::middleware('checklogin')->group(function () {
         Route::post('/manajemen-stok/tambah/{id}', [SparepartController::class, 'tambahStok'])
             ->whereNumber('id')
             ->name('sparepart.tambah');
+    });
 
+    /*
+    | Hapus Sparepart
+    | Khusus Admin
+    */
+
+    Route::middleware('role:admin')->group(function () {
         Route::delete('/manajemen-stok/delete/{id}', [SparepartController::class, 'destroy'])
             ->whereNumber('id')
             ->name('sparepart.destroy');
     });
-
 
     /*
     | Kasir
@@ -132,11 +146,11 @@ Route::middleware('checklogin')->group(function () {
         Route::get('/kasir', [BookingController::class, 'indexKasir'])
             ->name('kasir.index');
 
-        Route::post('/kasir/bayar/{id}', [BookingController::class, 'prosesPembayaran'])
+        // PASTIKAN HANYA ADA 1 ROUTE kasir/bayar/{id} di seluruh file web.php!
+        Route::post('/kasir/bayar/{id}', [KasirController::class, 'bayar'])
             ->whereNumber('id')
             ->name('kasir.bayar');
     });
-
 
     /*
     | Mekanik
@@ -150,7 +164,6 @@ Route::middleware('checklogin')->group(function () {
             ->whereNumber('id')
             ->name('mekanik.update');
     });
-
 
     /*
     | Portal dan Booking Pelanggan

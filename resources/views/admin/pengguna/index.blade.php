@@ -6,17 +6,18 @@
     <title>Kelola Data Pengguna - BengkelCare</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+    <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 
 <body class="bg-[#F4F7FA] text-slate-800 h-screen flex overflow-hidden">
 
+    <!-- OVERLAY SIDEBAR MOBILE -->
+    <div id="mobile-sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden transition-opacity"></div>
+
     <!-- SIDEBAR ADMIN -->
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-20">
+    <aside id="sidebar-main" class="fixed md:static inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out">
         <div>
-            <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="h-16 flex items-center justify-between px-6 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <div class="text-blue-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -28,14 +29,18 @@
                         <p class="text-[9px] font-semibold text-slate-500">Panel Kontrol Administrator</p>
                     </div>
                 </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
             <nav class="px-3 space-y-1 mt-4">
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
-                <a href="/dashboard-admin" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">🏠 Dashboard Admin</a>
-                <a href="{{ route('admin.pengguna.index') }}" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">👥 Kelola Data Pengguna</a>
-                <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">🚗 Kelola Servis & Kasir (POS)</a>
-                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">📦 Kelola Data Kendaraan & sparepart</a>
+                <a href="/dashboard-admin" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">Dashboard Utama</a>
+
+                @if(Route::has('admin.pengguna.index'))
+                <a href="{{ route('admin.pengguna.index') }}" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Kelola Data Pengguna</a>
+                @endif
+                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Manajemen sparepart</a>
+                <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Laporan Keuangan</a>
             </nav>
         </div>
 
@@ -45,15 +50,20 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
-            <h2 class="font-bold text-slate-800 text-sm">Manajemen Akun Pengguna & Staf</h2>
+    <div class="flex-1 flex flex-col overflow-hidden w-full">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h2 class="font-bold text-slate-800 text-xs sm:text-sm truncate">Manajemen Akun Pengguna & Staf</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
 
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold flex justify-between items-center">
@@ -73,57 +83,43 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
 
                 <!-- FORM TAMBAH AKUN -->
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 h-fit">
-                    <h3 class="font-bold text-slate-900 text-sm mb-4">Tambah Akun Baru</h3>
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 h-fit">
+                    <h3 class="font-bold text-slate-900 text-xs sm:text-sm mb-4">Tambah Akun Baru</h3>
 
-                    <form id="formTambahAkun"
-                          action="{{ route('admin.pengguna.store') }}"
-                          method="POST"
-                          class="space-y-4">
+                    <form id="formTambahAkun" action="{{ route('admin.pengguna.store') }}" method="POST" class="space-y-4">
                         @csrf
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>
-                            <input type="text" name="nama" value="{{ old('nama') }}" required maxlength="100"
-                                   placeholder="Contoh: Budi Santoso"
-                                   class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <input type="text" name="nama" value="{{ old('nama') }}" required maxlength="100" placeholder="Contoh: Budi Santoso" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Nomor Telepon / HP</label>
-                            <input type="text" name="no_hp" value="{{ old('no_hp') }}" required maxlength="20"
-                                   placeholder="Contoh: 08123456789"
-                                   class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <input type="text" name="no_hp" value="{{ old('no_hp') }}" required maxlength="20" placeholder="Contoh: 08123456789" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                         </div>
 
                         <div id="wrapperAlamat" class="hidden">
                             <label class="block text-xs font-bold text-slate-700 mb-1">Alamat (Khusus Pelanggan)</label>
-                            <textarea name="alamat" id="inputAlamat"
-                                      placeholder="Contoh: Jl. Ciwidey No. 123"
-                                      class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">{{ old('alamat') }}</textarea>
+                            <textarea name="alamat" id="inputAlamat" placeholder="Contoh: Jl. Ciwidey No. 123" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">{{ old('alamat') }}</textarea>
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Username / Email Login</label>
-                            <input type="text" name="username" value="{{ old('username') }}" required maxlength="50"
-                                   placeholder="Contoh: budi_member"
-                                   class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <input type="text" name="username" value="{{ old('username') }}" required maxlength="50" placeholder="Contoh: budi_member" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>
-                            <input type="password" name="password" required minlength="6"
-                                   placeholder="Minimal 6 karakter"
-                                   class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <input type="password" name="password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                         </div>
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Hak Akses (Role)</label>
-                            <select name="role" id="selectRole" required
-                                    class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
+                            <select name="role" id="selectRole" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-medium">
                                 <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrator</option>
                                 <option value="kasir" {{ old('role') === 'kasir' ? 'selected' : '' }}>Kasir</option>
                                 <option value="mekanik" {{ old('role') === 'mekanik' ? 'selected' : '' }}>Mekanik</option>
@@ -131,8 +127,7 @@
                             </select>
                         </div>
 
-                        <button type="submit"
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
                             Simpan Akun Baru
                         </button>
                     </form>
@@ -140,13 +135,13 @@
 
                 <!-- TABEL PENGELOLA -->
                 <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-slate-100">
-                        <h3 class="font-bold text-slate-900 text-sm">Daftar Pengguna / Staf Sistem</h3>
+                    <div class="p-4 sm:p-6 border-b border-slate-100">
+                        <h3 class="font-bold text-slate-900 text-xs sm:text-sm">Daftar Pengguna / Staf Sistem</h3>
                         <p class="text-xs text-slate-500 mt-0.5">Seluruh akun pegawai pengelola bengkel.</p>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                     <th class="py-3 px-4">Nama</th>
@@ -170,9 +165,7 @@
                                             </span>
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            <form action="{{ route('admin.pengguna.destroy', $p->id_pengelola) }}"
-                                                  method="POST"
-                                                  onsubmit="return confirm('Yakin ingin menghapus akun ini?')">
+                                            <form action="{{ route('admin.pengguna.destroy', $p->id_pengelola) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus akun ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs">Hapus</button>
@@ -191,14 +184,14 @@
             </div>
 
             <!-- TABEL PELANGGAN -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-6">
-                <div class="p-6 border-b border-slate-100">
-                    <h3 class="font-bold text-slate-900 text-sm">Daftar Member Pelanggan Bengkel</h3>
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-900 text-xs sm:text-sm">Daftar Member Pelanggan Bengkel</h3>
                     <p class="text-xs text-slate-500 mt-0.5">Akun pelanggan terdaftar yang dikelola oleh admin.</p>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                 <th class="py-3 px-4">Nama Pelanggan</th>
@@ -217,9 +210,7 @@
                                     <td class="py-3 px-4 text-slate-600">{{ $pelanggan->no_hp }}</td>
                                     <td class="py-3 px-4 text-slate-600">{{ $pelanggan->alamat }}</td>
                                     <td class="py-3 px-4 text-center">
-                                        <form action="{{ route('admin.pelanggan.destroy', $pelanggan->id_pelanggan) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('Yakin ingin menghapus data pelanggan ini?')">
+                                        <form action="{{ route('admin.pelanggan.destroy', $pelanggan->id_pelanggan) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data pelanggan ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-800 font-semibold text-xs">Hapus</button>
@@ -239,7 +230,6 @@
         </main>
     </div>
 
-    <!-- PENYESUAIAN FORM BERDASARKAN ROLE -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('formTambahAkun');
@@ -262,6 +252,13 @@
         selectRole.addEventListener('change', cekRole);
         cekRole();
     });
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar-main');
+        const overlay = document.getElementById('mobile-sidebar-overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
     </script>
 
 </body>

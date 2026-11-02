@@ -10,10 +10,13 @@
 </head>
 <body class="bg-[#F4F7FA] text-slate-800 h-screen flex overflow-hidden">
 
+    <!-- OVERLAY SIDEBAR MOBILE -->
+    <div id="mobile-sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden transition-opacity"></div>
+
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-20">
+    <aside id="sidebar-main" class="fixed md:static inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out">
         <div>
-            <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="h-16 flex items-center justify-between px-6 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <div class="text-blue-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
@@ -23,13 +26,18 @@
                         <p class="text-[9px] font-semibold text-slate-500">Sistem Servis Terpadu</p>
                     </div>
                 </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-600">✕</button>
             </div>
 
             <nav class="px-3 space-y-1 mt-4">
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
-                <a href="/manajemen-stok" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">📦 Manajemen Sparepart</a>
-                <a href="/kasir" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">🛒 Monitoring & Kasir</a>
-                <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">📊 Laporan Keuangan</a>
+                <a href="/dashboard-admin" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">Dashboard Utama</a>
+
+                @if(Route::has('admin.pengguna.index'))
+                <a href="{{ route('admin.pengguna.index') }}" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Kelola Data Pengguna</a>
+                @endif
+                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Manajemen sparepart</a>
+                <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Laporan Keuangan</a>
             </nav>
         </div>
         <div class="px-6 py-4 border-t border-slate-200">
@@ -38,15 +46,20 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
-            <h2 class="font-bold text-slate-800 text-sm">Manajemen Inventori & Sparepart</h2>
+    <div class="flex-1 flex flex-col overflow-hidden w-full">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <h2 class="font-bold text-slate-800 text-xs sm:text-sm truncate">Manajemen Inventori & Sparepart</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-[11px] sm:text-xs font-bold text-slate-700 uppercase">{{ session('nama') }} ({{ session('role') }})</span>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6">
 
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold flex justify-between items-center">
@@ -57,27 +70,27 @@
 
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-black text-slate-900 tracking-tight">Datalog Sparepart & Pelumas</h2>
+                    <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Datalog Sparepart & Pelumas</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Kelola harga beli, harga jual, margin keuntungan, dan pemantauan stok secara akurat.</p>
                 </div>
             </div>
 
             <!-- DASHBOARD SUMMARY -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex justify-between items-center">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm flex justify-between items-center">
                     <div>
                         <p class="text-[10px] font-bold text-slate-400 uppercase">Total SKU Barang Aktif</p>
-                        <h3 class="text-3xl font-black text-slate-900 mt-1">{{ $totalSku ?? 0 }} <span class="text-xs font-medium text-slate-500">Item</span></h3>
+                        <h3 class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">{{ $totalSku ?? 0 }} <span class="text-xs font-medium text-slate-500">Item</span></h3>
                         <p class="text-xs text-blue-600 font-bold mt-2">Valuasi Modal Aset: Rp {{ number_format($totalValuasi ?? 0, 0, ',', '.') }}</p>
                     </div>
                     <div class="bg-blue-50 p-3 rounded-xl text-blue-600">📦</div>
                 </div>
 
-                <div class="bg-white rounded-xl border border-red-200 p-5 shadow-sm flex justify-between items-center relative overflow-hidden">
+                <div class="bg-white rounded-xl border border-red-200 p-4 sm:p-5 shadow-sm flex justify-between items-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
                     <div class="pl-2">
                         <p class="text-[10px] font-bold text-red-600 uppercase">Peringatan Stok Kritis / Habis</p>
-                        <h3 class="text-3xl font-black text-red-600 mt-1">{{ isset($stokKritis) ? $stokKritis->count() : 0 }} <span class="text-xs font-medium text-red-500">Item Perlu Restock</span></h3>
+                        <h3 class="text-2xl sm:text-3xl font-black text-red-600 mt-1">{{ isset($stokKritis) ? $stokKritis->count() : 0 }} <span class="text-xs font-medium text-red-500">Item Perlu Restock</span></h3>
                         <p class="text-xs text-slate-500 mt-2">Stok menyamai atau di bawah batas minimum sistem.</p>
                     </div>
                     <div class="bg-red-50 p-3 rounded-xl text-red-600 border border-red-100">⚠️</div>
@@ -85,12 +98,11 @@
             </div>
 
             <!-- FORM TAMBAH BARANG -->
-            <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                <h3 class="font-bold text-slate-900 text-sm mb-4">➕ Tambah Suku Cadang & Harga Modal (Beli)</h3>
-                <!-- PERUBAHAN: Route form disesuaikan ke sparepart.store -->
-                <form action="{{ route('sparepart.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-7 gap-3">
+            <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm mb-4">➕ Tambah Suku Cadang & Harga Modal (Beli)</h3>
+                <form action="{{ route('sparepart.store') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
                     @csrf
-                    <div class="md:col-span-2">
+                    <div class="sm:col-span-2 md:col-span-2">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Barang:</label>
                         <input type="text" name="nama_barang" required placeholder="Cth: Oli TMO 1L" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500">
                     </div>
@@ -115,8 +127,8 @@
                         <input type="number" name="jumlah_stok" required placeholder="10" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500">
                     </div>
                     <input type="hidden" name="minimum_stok" value="5">
-                    <div class="md:col-span-7 flex justify-end mt-2">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm transition-colors">
+                    <div class="sm:col-span-2 md:col-span-7 flex justify-end mt-2">
+                        <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm transition-colors">
                             Simpan Barang ke Inventori
                         </button>
                     </div>
@@ -125,11 +137,11 @@
 
             <!-- TABEL INVENTORI -->
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                    <h3 class="font-bold text-slate-900 text-sm">Daftar Inventori Sparepart</h3>
+                <div class="px-4 sm:px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
+                    <h3 class="font-bold text-slate-900 text-xs sm:text-sm">Daftar Inventori Sparepart</h3>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left border-collapse min-w-[650px]">
                         <thead>
                             <tr class="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
                                 <th class="py-3 px-4">Nama Barang & Rak</th>
@@ -141,7 +153,6 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                            <!-- PERUBAHAN: Variabel diubah menjadi $spareparts -->
                             @forelse($spareparts as $item)
                             <tr class="hover:bg-slate-50/50">
                                 <td class="py-4 px-4">
@@ -153,20 +164,18 @@
                                 <td class="py-4 px-4 text-right font-bold text-slate-900">Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
                                 <td class="py-4 px-4 text-center">
                                     @if($item->jumlah_stok <= $item->minimum_stok)
-                                        <span class="bg-red-100 text-red-700 font-extrabold text-[11px] px-2.5 py-1 rounded-full inline-block">⚠️ {{ $item->jumlah_stok }} Pcs (Kritis)</span>
+                                        <span class="bg-red-100 text-red-700 font-extrabold text-[11px] px-2.5 py-1 rounded-full inline-block whitespace-nowrap">⚠️ {{ $item->jumlah_stok }} Pcs (Kritis)</span>
                                     @else
-                                        <span class="bg-emerald-100 text-emerald-800 font-bold text-[11px] px-2.5 py-1 rounded-full inline-block">{{ $item->jumlah_stok }} Pcs (Aman)</span>
+                                        <span class="bg-emerald-100 text-emerald-800 font-bold text-[11px] px-2.5 py-1 rounded-full inline-block whitespace-nowrap">{{ $item->jumlah_stok }} Pcs (Aman)</span>
                                     @endif
                                 </td>
                                 <td class="py-4 px-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <!-- PERUBAHAN: Route disesuaikan ke sparepart.tambah -->
                                         <form action="{{ route('sparepart.tambah', $item->id) }}" method="POST" class="inline-flex items-center gap-1">
                                             @csrf
                                             <input type="number" name="tambah_jumlah" value="1" min="1" class="w-12 bg-white border border-slate-200 rounded text-center text-xs py-1">
                                             <button type="submit" class="bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[10px] px-2 py-1 rounded border border-blue-200">+ Stok</button>
                                         </form>
-                                        <!-- PERUBAHAN: Route disesuaikan ke sparepart.destroy -->
                                         <form action="{{ route('sparepart.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?')">
                                             @csrf
                                             @method('DELETE')
@@ -187,5 +196,14 @@
 
         </main>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-main');
+            const overlay = document.getElementById('mobile-sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
 </body>
 </html>
