@@ -38,39 +38,57 @@ class BookingController extends Controller
         // 3. Daftar Pelanggan (Pengaman jika tabel pelanggan ada)
         $pelanggan = Schema::hasTable('pelanggan') ? DB::table('pelanggan')->get() : collect();
 
-        // 4. Grafik Pendapatan (7 Hari Terakhir)
-        $namaHariMap = [
-            'Mon' => 'SEN', 'Tue' => 'SEL', 'Wed' => 'RAB', 'Thu' => 'KAM',
-            'Fri' => 'JUM', 'Sat' => 'SAB', 'Sun' => 'MIN',
-        ];
+        // 4. Grafik Pendapatan (7 Hari Terakhir) - Optimasi 1 Query
+$namaHariMap = [
+    'Mon' => 'SEN', 'Tue' => 'SEL', 'Wed' => 'RAB', 'Thu' => 'KAM',
+    'Fri' => 'JUM', 'Sat' => 'SAB', 'Sun' => 'MIN',
+];
 
-        $grafik = [];
-        $maxOmset = 1;
+$tanggalAkhir = Carbon::today();
+$tanggalAwal = $tanggalAkhir->copy()->subDays(6);
 
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
-            $total = Schema::hasTable('transaksi')
-                ? (DB::table('transaksi')
-                    ->whereDate('tgl_transaksi', $date->toDateString())
-                    ->where('status_pembayaran', 'Lunas')
-                    ->sum(DB::raw('COALESCE(total_biaya, 0)')) ?? 0)
-                : 0;
+$omsetPerHari = collect();
 
-            if ($total > $maxOmset) {
-                $maxOmset = $total;
-            }
+if (Schema::hasTable('transaksi')) {
+    $omsetPerHari = DB::table('transaksi')
+        ->selectRaw('DATE(tgl_transaksi) as tanggal, SUM(COALESCE(total_biaya, 0)) as total')
+        ->whereBetween('tgl_transaksi', [
+            $tanggalAwal->copy()->startOfDay(),
+            $tanggalAkhir->copy()->endOfDay()
+        ])
+        ->where('status_pembayaran', 'Lunas')
+        ->groupBy(DB::raw('DATE(tgl_transaksi)'))
+        ->get()
+        ->keyBy('tanggal');
+}
 
-            $dayKey = $date->format('D');
-            $grafik[] = [
-                'hari' => $namaHariMap[$dayKey] ?? strtoupper($dayKey),
-                'total' => $total,
-                'total_format' => 'Rp ' . number_format($total, 0, ',', '.'),
-            ];
-        }
+$grafik = [];
+$maxOmset = 1;
 
-        foreach ($grafik as &$g) {
-            $g['tinggi_persen'] = $maxOmset > 0 ? max(10, round(($g['total'] / $maxOmset) * 100)) : 10;
-        }
+for ($i = 6; $i >= 0; $i--) {
+    $date = Carbon::today()->subDays($i);
+    $tanggal = $date->toDateString();
+
+    $total = (float) ($omsetPerHari->get($tanggal)->total ?? 0);
+
+    $maxOmset = max($maxOmset, $total);
+
+    $dayKey = $date->format('D');
+
+    $grafik[] = [
+        'hari' => $namaHariMap[$dayKey] ?? strtoupper($dayKey),
+        'total' => $total,
+        'total_format' => 'Rp ' . number_format($total, 0, ',', '.'),
+    ];
+}
+
+foreach ($grafik as &$g) {
+    $g['tinggi_persen'] = max(
+        10,
+        round(($g['total'] / $maxOmset) * 100)
+    );
+}
+unset($g);
 
         $viewName = view()->exists('dashboard-admin')
             ? 'dashboard-admin'
@@ -122,39 +140,15 @@ class BookingController extends Controller
      * Update progres oleh mekanik
      */
     public function updateProgres(Request $request, $id)
-{
-    $validated = $request->validate([
-        'status' => 'required|in:Menunggu,Dikerjakan,Selesai',
-        'catatan_mekanik' => 'nullable|string|max:1000',
-        'lampiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
-    ]);
+    {
+        DB::table('bookings')->where('id', $id)->orWhere('id_servis', $id)->update([
+            'status' => $request->status,
+            'catatan_mekanik' => $request->catatan_mekanik,
+            'updated_at' => now()
+        ]);
 
-    $booking = DB::table('bookings')
-    ->where('id', $id)
-    ->first();
-
-    if (!$booking) {
-        abort(404, 'Booking tidak ditemukan.');
+        return redirect()->back()->with('success', 'Progres servis berhasil diperbarui!');
     }
-
-    $data = [
-        'status' => $validated['status'],
-        'catatan_mekanik' => $validated['catatan_mekanik'] ?? null,
-        'updated_at' => now(),
-    ];
-
-    if ($request->hasFile('lampiran')) {
-        $data['lampiran'] = $request->file('lampiran')
-            ->store('lampiran-mekanik', 'local');
-    }
-
-    DB::table('bookings')
-        ->where('id', $booking->id)
-        ->update($data);
-
-    return redirect()->back()
-        ->with('success', 'Progres servis berhasil diperbarui!');
-}
 
     /**
      * Menampilkan portal pelanggan

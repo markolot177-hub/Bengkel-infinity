@@ -3,25 +3,47 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Sparepart; // PERUBAHAN 1: Memanggil model Sparepart
+use Illuminate\Support\Facades\DB;
+use App\Models\Sparepart;
 
-class SparepartController extends Controller // PERUBAHAN 2: Menyesuaikan nama class
+class SparepartController extends Controller
 {
     // Menampilkan halaman manajemen stok & laporan modal
     public function index()
     {
-        $spareparts = Sparepart::all(); // PERUBAHAN 3: Menggunakan model Sparepart
-        $totalSku = $spareparts->count();
-        
-        $totalValuasi = $spareparts->sum(function($item) {
-            // PERUBAHAN 4: Menambahkan tanda bintang (*) untuk operasi perkalian
-            return $item->jumlah_stok * $item->harga_beli;
-        });
-        
-        $stokKritis = Sparepart::where('jumlah_stok', '<=', 5)->get();
+        // Mengambil data sparepart dengan kolom yang diperlukan saja
+        $spareparts = Sparepart::select([
+            'id',
+            'nama_barang',
+            'kategori',
+            'rak',
+            'harga_beli',
+            'harga_jual',
+            'jumlah_stok',
+            'minimum_stok'
+        ])->get();
 
-        // Variabel yang dikirim ke tampilan diubah menjadi 'spareparts'
-        return view('admin.stok', compact('spareparts', 'totalSku', 'totalValuasi', 'stokKritis'));
+        // Menghitung total SKU langsung di database
+        $totalSku = Sparepart::count();
+
+        // Menghitung total valuasi langsung di database
+        $totalValuasi = Sparepart::sum(
+            DB::raw('jumlah_stok * harga_beli')
+        );
+
+        // Mengambil sparepart yang stoknya sudah mencapai batas minimum
+        $stokKritis = Sparepart::whereColumn(
+            'jumlah_stok',
+            '<=',
+            'minimum_stok'
+        )->get();
+
+        return view('admin.stok', compact(
+            'spareparts',
+            'totalSku',
+            'totalValuasi',
+            'stokKritis'
+        ));
     }
 
     // Menambah barang baru
@@ -38,7 +60,10 @@ class SparepartController extends Controller // PERUBAHAN 2: Menyesuaikan nama c
 
         Sparepart::create($request->all());
 
-        return redirect()->back()->with('success', 'Suku cadang berhasil ditambahkan ke inventori!');
+        return redirect()->back()->with(
+            'success',
+            'Suku cadang berhasil ditambahkan ke inventori!'
+        );
     }
 
     // Menambah jumlah stok manual
@@ -55,6 +80,10 @@ class SparepartController extends Controller // PERUBAHAN 2: Menyesuaikan nama c
     public function destroy($id)
     {
         Sparepart::findOrFail($id)->delete();
-        return redirect()->back()->with('success', 'Barang berhasil dihapus dari inventori.');
+
+        return redirect()->back()->with(
+            'success',
+            'Barang berhasil dihapus dari inventori.'
+        );
     }
 }
