@@ -17,6 +17,13 @@
             <p class="text-xs text-slate-500 mt-1">Sistem Manajemen & Servis Terpadu</p>
         </div>
 
+        <!-- Notifikasi Sukses Setelah Buat Akun -->
+        @if(session('success'))
+            <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-xs font-semibold">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <!-- Tampilkan Error Jika Login Gagal -->
         @if($errors->any())
             <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold">
@@ -50,6 +57,16 @@
                 Masuk ke Sistem BengkelCare
             </button>
         </form>
+
+        <!-- TAUTAN KE HALAMAN REGISTRASI -->
+        <div class="mt-6 pt-5 border-t border-slate-100 text-center">
+            <p class="text-xs text-slate-500">
+                Belum punya akun pelanggan?
+                <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-bold hover:underline">
+                    Buat Akun Baru
+                </a>
+            </p>
+        </div>
 
     </div>
 

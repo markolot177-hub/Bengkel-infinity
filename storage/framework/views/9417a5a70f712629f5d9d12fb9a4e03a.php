@@ -33,15 +33,30 @@
             </div>
 
             <nav class="px-3 space-y-1 mt-4">
-                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
-                <a href="/dashboard-admin" class="flex items-center gap-3 bg-blue-600 text-white px-3 py-2.5 rounded-lg text-xs font-semibold shadow-sm">Dashboard Utama</a>
+    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
 
-                <?php if(Route::has('admin.pengguna.index')): ?>
-                <a href="<?php echo e(route('admin.pengguna.index')); ?>" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Kelola Data Pengguna</a>
-                <?php endif; ?>
-                <a href="/manajemen-stok" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Manajemen sparepart</a>
-                <a href="/laporan-pendapatan" class="flex items-center gap-3 text-slate-600 hover:bg-slate-50 px-3 py-2.5 rounded-lg text-xs font-medium">Laporan Keuangan</a>
-            </nav>
+    <!-- Menu Dashboard -->
+    <a href="/dashboard-admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs <?php echo e(request()->is('dashboard-admin') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium'); ?>">
+        Dashboard Utama
+    </a>
+
+    <!-- Menu Kelola Pengguna -->
+    <?php if(Route::has('admin.pengguna.index')): ?>
+    <a href="<?php echo e(route('admin.pengguna.index')); ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs <?php echo e(request()->is('admin/pengguna*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium'); ?>">
+        Kelola Data Pengguna
+    </a>
+    <?php endif; ?>
+
+    <!-- Menu Manajemen Sparepart -->
+    <a href="/manajemen-stok" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs <?php echo e(request()->is('manajemen-stok*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium'); ?>">
+        Manajemen sparepart
+    </a>
+
+    <!-- Menu Laporan Keuangan -->
+    <a href="/laporan-pendapatan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs <?php echo e(request()->is('laporan-pendapatan*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium'); ?>">
+        Laporan Keuangan
+    </a>
+</nav>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-200">
@@ -141,7 +156,7 @@
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[500px]">
+                        <table class="w-full text-left border-collapse min-w-[500px]''>
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                     <th class="py-3 px-4">Nama</th>
@@ -192,7 +207,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[500px]">
+                    <table class="w-full text-left border-collapse min-w-[500px]''>
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                 <th class="py-3 px-4">Nama Pelanggan</th>

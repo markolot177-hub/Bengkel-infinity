@@ -100,7 +100,7 @@
                 <!-- Peringatan Stok Menipis -->
                 <div class="<?php echo e(($stokMenipis ?? 0) > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'); ?> rounded-xl border p-4 sm:p-5 shadow-sm relative overflow-hidden sm:col-span-2 md:col-span-1">
                     <div class="flex justify-between items-center mb-3 relative z-10">
-                        <h3 class="font-bold <?php echo e(($stokMenipis ?? 0) > 0 ? 'text-red-600' : 'text-slate-500'); ?> text-[11px] uppercase tracking-wider">Stok Menipis (<= 5)</h3>
+                        <h3 class="font-bold <?php echo e(($stokMenipis ?? 0) > 0 ? 'text-red-600' : 'text-slate-500'); ?> text-[11px] uppercase tracking-wider">Stok Menipis (&lt;= 5)</h3>
                         <div class="<?php echo e(($stokMenipis ?? 0) > 0 ? 'bg-red-100 text-red-600' : 'bg-slate-200 text-slate-600'); ?> p-1.5 rounded-lg text-sm">⚠️</div>
                     </div>
                     <div class="text-xl sm:text-2xl font-black <?php echo e(($stokMenipis ?? 0) > 0 ? 'text-red-700' : 'text-slate-700'); ?> relative z-10">
@@ -174,7 +174,7 @@
                     <span class="text-xs text-slate-500 font-medium">Total: <?php echo e(count($pelanggan ?? [])); ?> Pelanggan</span>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse min-w-[500px]">
+                    <table class="w-full text-left text-xs border-collapse min-w-125">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px]">
                                 <th class="p-3 border-b">No</th>

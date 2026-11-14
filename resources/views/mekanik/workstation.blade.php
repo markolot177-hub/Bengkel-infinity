@@ -93,7 +93,7 @@
                                 </div>
                             </div>
 
-                            <form action="{{ route('mekanik.update', $b->id) }}" method="POST" enctype="multipart/form-data" class="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl space-y-3">
+                            <form action="{{ route('mekanik.update', $b->id ?? $b->id_servis) }}" method="POST" enctype="multipart/form-data" class="bg-white border border-slate-200 p-3 sm:p-4 rounded-xl space-y-3">
                                 @csrf
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
@@ -101,26 +101,24 @@
                                         <select name="status" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
                                             <option value="Menunggu" {{ $b->status == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
                                             <option value="Dikerjakan" {{ $b->status == 'Dikerjakan' ? 'selected' : '' }}>Sedang Dikerjakan</option>
-                                            <option value="Selesai" {{ $b->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                            <option value="Selesai" {{ $b->status == 'Selesai' ? 'selected' : '' }}>Selesai (Lempar ke Kasir)</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Upload Bukti / Lampiran (Foto/PDF):</label>
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Upload Bukti / Lampiran (Foto):</label>
                                         <input type="file" name="lampiran" class="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700">
-                                        @error('lampiran')
-                                           <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Catatan Pengerjaan Mekanik:</label>
-                                    <textarea name="catatan_mekanik" rows="2" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">{{ $b->catatan_mekanik }}</textarea>
+                                    <label class="block text-[10px] font-bold text-blue-600 uppercase mb-1">📝 Catatan Pekerjaan & Tagihan Kasir:</label>
+                                    <textarea name="catatan_mekanik" rows="2" placeholder="Contoh: Ganti oli 1 botol, kampas rem. Jasa servis 50.000" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">{{ $b->catatan_mekanik }}</textarea>
+                                    <p class="text-[9px] text-slate-400 mt-1">Sebutkan nama barang yang dipakai dan total harga jasa di sini agar kasir tidak salah menagih.</p>
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition-colors">
-                                        Simpan Progres & Catatan
+                                    <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                                        Simpan Progres & Beritahu Kasir
                                     </button>
                                 </div>
                             </form>
@@ -144,6 +142,20 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function () {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                        submitBtn.innerHTML = 'Menyimpan...';
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

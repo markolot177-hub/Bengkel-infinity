@@ -50,7 +50,7 @@ class ServisController extends Controller
     }
 
     // Mengubah data servis dengan pengecekan anti-IDOR
-    public function update(Request $request, $id)
+    public function update(Request $request, string|int $id)
     {
         $servis = Servis::find($id);
 
@@ -102,7 +102,7 @@ class ServisController extends Controller
     }
 
     // Menghapus data servis (akses admin diatur melalui middleware route)
-    public function destroy($id)
+    public function destroy(string|int $id)
     {
         $servis = Servis::find($id);
 

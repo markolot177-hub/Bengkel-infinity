@@ -98,7 +98,7 @@ class PenggunaController extends Controller
     }
 
     // Hapus akun pengelola
-    public function destroy($id)
+    public function destroy(string|int $id)
     {
         $pengguna = Pengelola::where('id_pengelola', $id)->firstOrFail();
         $pengguna->delete();
@@ -107,7 +107,7 @@ class PenggunaController extends Controller
     }
 
     // Hapus akun pelanggan
-    public function destroyPelanggan($id)
+    public function destroyPelanggan(string|int $id)
     {
         $pelanggan = Pelanggan::where('id_pelanggan', $id)->firstOrFail();
         $pelanggan->delete();

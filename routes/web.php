@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\SparepartController;
@@ -11,7 +9,7 @@ use App\Http\Controllers\KasirController;
 
 /*
 |--------------------------------------------------------------------------
-| Login dan Logout
+| Login, Registrasi, dan Logout
 |--------------------------------------------------------------------------
 */
 
@@ -19,6 +17,12 @@ Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 
 Route::match(['get', 'post'], '/login-proses', [AuthController::class, 'login'])
     ->name('login.proses');
+
+Route::get('/register', [AuthController::class, 'showRegister'])
+    ->name('register');
+
+Route::post('/register-proses', [AuthController::class, 'register'])
+    ->name('register.proses');
 
 Route::get('/logout', [AuthController::class, 'logout'])
     ->middleware('checklogin')
@@ -34,51 +38,10 @@ Route::middleware('checklogin')->group(function () {
 
     /*
     | Dashboard Admin
+    | Data (omset, grafik, stok, pelanggan) dihitung di BookingController
     */
 
-    Route::get('/dashboard-admin', function () {
-        $omsetHariIni = DB::table('servis')
-            ->whereDate('tgl_servis', Carbon::today())
-            ->sum('total_biaya');
-
-        $totalStok = DB::table('sparepart')->sum('jumlah_stok');
-
-        $barangHampirHabis = DB::table('sparepart')
-            ->where('jumlah_stok', '<=', 5)
-            ->get();
-
-        $stokMenipis = $barangHampirHabis->count();
-
-        $grafik = [];
-
-        for ($i = 6; $i >= 0; $i--) {
-            $tanggal = Carbon::today()->subDays($i);
-
-            $totalHarian = DB::table('servis')
-                ->whereDate('tgl_servis', $tanggal)
-                ->sum('total_biaya');
-
-            $grafik[] = [
-                'hari' => $tanggal->locale('id')->translatedFormat('D'),
-                'total_format' => $totalHarian > 1000000
-                    ? round($totalHarian / 1000000, 1) . 'M'
-                    : ($totalHarian > 1000
-                        ? round($totalHarian / 1000, 1) . 'K'
-                        : 0),
-                'tinggi_persen' => $totalHarian > 0
-                    ? min(($totalHarian / 5000000) * 100, 100)
-                    : 0,
-            ];
-        }
-
-        return view('admin.dashboard', compact(
-            'omsetHariIni',
-            'totalStok',
-            'stokMenipis',
-            'barangHampirHabis',
-            'grafik'
-        ));
-    })
+    Route::get('/dashboard-admin', [BookingController::class, 'indexDashboardAdmin'])
         ->middleware('role:admin')
         ->name('dashboard.admin');
 
@@ -112,7 +75,6 @@ Route::middleware('checklogin')->group(function () {
     */
 
     Route::middleware('role:admin,kasir')->group(function () {
-        // Mengarahkan route laporan-pendapatan ke BookingController
         Route::get('/laporan-pendapatan', [BookingController::class, 'laporanPendapatan'])
             ->name('keuangan.admin');
 
@@ -146,7 +108,6 @@ Route::middleware('checklogin')->group(function () {
         Route::get('/kasir', [BookingController::class, 'indexKasir'])
             ->name('kasir.index');
 
-        // PASTIKAN HANYA ADA 1 ROUTE kasir/bayar/{id} di seluruh file web.php!
         Route::post('/kasir/bayar/{id}', [KasirController::class, 'bayar'])
             ->whereNumber('id')
             ->name('kasir.bayar');
@@ -166,7 +127,7 @@ Route::middleware('checklogin')->group(function () {
     });
 
     /*
-    | Portal dan Booking Pelanggan
+    | Portal Pelanggan
     */
 
     Route::middleware('role:pelanggan')->group(function () {
@@ -176,12 +137,17 @@ Route::middleware('checklogin')->group(function () {
         Route::get('/booking-servis', [BookingController::class, 'create'])
             ->name('booking.create');
 
-        Route::post('/booking-servis', [BookingController::class, 'store'])
-            ->name('booking.store');
-
         Route::get('/garasi-saya', function () {
             return view('pelanggan.garasi');
         })->name('garasi.saya');
     });
+
+    /*
+    | Booking oleh Pelanggan dan Kasir
+    */
+
+    Route::post('/booking-servis', [BookingController::class, 'store'])
+        ->middleware('role:pelanggan,kasir')
+        ->name('booking.store');
 
 });

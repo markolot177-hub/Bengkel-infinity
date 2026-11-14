@@ -63,7 +63,7 @@
                 </div>
             @endif
 
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="bg-gradient-to-r' from-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 class="text-lg sm:text-xl font-black">Status Kendaraan & Riwayat Booking</h2>
                     <p class="text-xs text-blue-100 mt-1">Pantau progres pengerjaan mekanik dan rincian biaya secara transparan.</p>
@@ -115,10 +115,10 @@
                             @if(isset($b->lampiran) && $b->lampiran)
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                                     <a href="{{ asset('uploads/lampiran/' . $b->lampiran) }}" target="_blank">
-                                        <img src="{{ asset('uploads/lampiran/' . $b->lampiran) }}" alt="Bukti Servis" class="w-full sm:w-28 h-32 sm:h-20 object-cover rounded-lg border border-slate-300 shadow-sm hover:opacity-90 transition-opacity">
+                                        <img src="{{ asset('storage/' . $b->lampiran) }}" alt="Bukti Servis" class="w-full sm:w-28 h-32 sm:h-20 object-cover rounded-lg border border-slate-300 shadow-sm hover:opacity-90 transition-opacity">
                                     </a>
                                     <div>
-                                        <a href="{{ asset('uploads/lampiran/' . $b->lampiran) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-3.5 py-2 rounded-lg shadow-sm inline-block transition-colors">
+                                        <a href="{{ asset('storage/' . $b->lampiran) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-3.5 py-2 rounded-lg shadow-sm inline-block transition-colors">
                                             🔍 Lihat Foto Ukuran Penuh
                                         </a>
                                         <p class="text-[10px] text-slate-400 mt-1">Klik gambar atau tombol untuk melihat detail foto.</p>

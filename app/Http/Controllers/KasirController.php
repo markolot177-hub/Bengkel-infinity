@@ -6,13 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Transaksi;
 use App\Models\Sparepart;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class KasirController extends Controller
 {
-    public function bayar(Request $request, $id)
+    public function bayar(Request $request, string|int $id)
     {
         // 1. Validasi input dari form POS
         $request->validate([
@@ -195,7 +196,7 @@ class KasirController extends Controller
     /**
      * Isi atribut model hanya jika kolomnya ada di tabel.
      */
-    private function isiJikaKolomAda($model, array $data): void
+    private function isiJikaKolomAda(Model $model, array $data): void
     {
         $tabel = $model->getTable();
 
@@ -204,5 +205,5 @@ class KasirController extends Controller
                 $model->{$kolom} = $nilai;
             }
         }
-    }   
+    }
 }

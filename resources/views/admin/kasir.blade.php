@@ -177,7 +177,7 @@
             </div>
 
             <div class="p-4 border-t border-slate-200 bg-white sticky bottom-0 print:hidden">
-                <button onclick="cetakStruk()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition-colors flex items-center justify-center gap-2">
+                <button id="btn-print-struk" onclick="cetakStrukDenganLoading(this)" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition-colors flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                     Print Struk Sekarang
                 </button>
@@ -230,25 +230,32 @@
 
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6">
 
+            <!-- BREADCRUMB NAVIGASI -->
+            <nav class="flex px-4 py-2.5 text-slate-500 bg-white border border-slate-200 rounded-xl shadow-sm text-xs font-medium print:hidden" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2">
+                    <li class="inline-flex items-center">
+                        <a href="/dashboard-admin" class="inline-flex items-center text-slate-500 hover:text-blue-600">
+                            <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l1.293 1.293a1 1 0 001.414-1.414l-7-7z"></path>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 text-slate-400 mx-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-blue-600 font-bold">Monitoring & Kasir (POS)</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+
             @if(session('success'))
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-xs font-semibold flex justify-between items-center">
                     <span>{{ session('success') }}</span>
                     <span class="text-[10px] uppercase font-bold bg-emerald-100 px-2 py-0.5 rounded">Berhasil</span>
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-xs font-semibold flex justify-between items-center">
-                    <span>{{ session('error') }}</span>
-                    <span class="text-[10px] uppercase font-bold bg-red-100 px-2 py-0.5 rounded">Gagal</span>
-                </div>
-            @endif
-            @if($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-xs">
-                    <ul class="list-disc pl-4">
-                        @foreach($errors->all() as $err)
-                            <li>{{ $err }}</li>
-                        @endforeach
-                    </ul>
                 </div>
             @endif
 
@@ -272,7 +279,7 @@
                     <input type="hidden" name="tanggal_kedatangan" value="{{ date('Y-m-d') }}">
                     <input type="hidden" name="sesi_waktu" value="Langsung">
                     <div class="sm:col-span-2 md:col-span-1">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs p-2.5 rounded-lg shadow-sm transition-colors">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs p-2.5 rounded-lg shadow-sm transition-colors flex items-center justify-center">
                             Masuk Antrean
                         </button>
                     </div>
@@ -290,7 +297,7 @@
                         <thead>
                             <tr class="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
                                 <th class="py-3 px-4 sm:px-6">Pelanggan & Kendaraan</th>
-                                <th class="py-3 px-4 sm:px-6">Catatan Mekanik</th>
+                                <th class="py-3 px-4 sm:px-6">Catatan & Tagihan Mekanik</th>
                                 <th class="py-3 px-4 sm:px-6">Status Servis</th>
                                 <th class="py-3 px-4 sm:px-6 text-right">Aksi Kasir</th>
                             </tr>
@@ -303,14 +310,22 @@
                                             <span class="font-bold text-slate-900 block">{{ $b->nama_pelanggan }} <span class="bg-slate-900 text-white text-[9px] px-1.5 py-0.5 rounded ml-1">{{ $b->nopol }}</span></span>
                                             <span class="text-slate-500 text-[11px]">{{ $b->kendaraan }} - {{$b->no_booking ?? ''}}</span>
                                         </td>
-                                        <td class="py-4 px-4 sm:px-6">{{ $b->catatan_mekanik ?? 'Belum ada catatan.' }}</td>
+                                        <td class="py-4 px-4 sm:px-6">
+                                            @if(!empty($b->catatan_mekanik))
+                                                <span class="block bg-blue-50 border border-blue-100 text-blue-800 font-semibold p-2 rounded-lg">
+                                                    💬 {{ $b->catatan_mekanik }}
+                                                </span>
+                                            @else
+                                                <span class="text-slate-400 italic">Belum ada instruksi.</span>
+                                            @endif
+                                        </td>
                                         <td class="py-4 px-4 sm:px-6">
                                             @if($b->status == 'Menunggu')
                                                 <span class="bg-amber-100 text-amber-800 font-bold text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap">Menunggu</span>
                                             @elseif($b->status == 'Dikerjakan')
                                                 <span class="bg-blue-100 text-blue-800 font-bold text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap">Sedang Dikerjakan</span>
                                             @elseif($b->status == 'Selesai')
-                                                <span class="bg-orange-100 text-orange-800 font-bold text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap">Selesai Dikerjakan - Belum Bayar</span>
+                                                <span class="bg-orange-100 text-orange-800 font-bold text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap">Selesai (Belum Bayar)</span>
                                             @else
                                                 <span class="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap">Lunas (Rp {{ number_format($b->total_biaya ?? 0, 0, ',', '.') }})</span>
                                             @endif
@@ -318,11 +333,12 @@
                                         <td class="py-4 px-4 sm:px-6 text-right">
                                             @if($b->status != 'Lunas')
                                                 <button type="button" onclick="togglePos({{ $b->id ?? $b->id_servis }})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-4 py-2 rounded-lg shadow-sm whitespace-nowrap">
-                                                    🛒 Buka POS
+                                                    🛒 Buka POS Kasir
                                                 </button>
                                             @else
                                                 <div class="flex items-center justify-end gap-2">
                                                     <span class="text-emerald-600 font-bold text-[11px]">Lunas</span>
+                                                    <!-- Sisa blok kode cetak struk tidak berubah dari versi sebelumnya -->
                                                     @php
                                                         $dbIdServis = $b->id ?? $b->id_servis;
                                                         $transaksi = \Illuminate\Support\Facades\DB::table('transaksi')->where('id_servis', $dbIdServis)->first();
@@ -414,7 +430,7 @@
                                                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Metode Pembayaran:</label>
                                                             <select name="metode_pembayaran" id="metode-{{ $b->id ?? $b->id_servis }}" onchange="toggleCashInput('{{ $b->id ?? $b->id_servis }}')" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs">
                                                                 <option value="Tunai">Tunai / Cash</option>
-                                                                <option value="QRIS">QRIS</option>
+                                                                <option value="TRANSFER">Transfer</option>
                                                             </select>
                                                         </div>
 
@@ -435,7 +451,7 @@
                                                         </div>
 
                                                         <div class="flex justify-end gap-2">
-                                                            <button type="submit" class="w-full sm:w-auto bg-emerald-600 text-white font-bold px-5 py-2.5 rounded shadow-sm text-[11px]">Terima Pembayaran</button>
+                                                            <button type="submit" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded shadow-sm text-[11px] flex items-center justify-center">Terima Pembayaran</button>
                                                         </div>
                                                     </div>
                                                 </form>
@@ -455,6 +471,7 @@
         </main>
     </div>
 
+    <!-- SCRIPT UTAMA & INDIKATOR LOADING -->
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar-main');
@@ -513,7 +530,17 @@
             document.getElementById('modal-preview').style.display = 'none';
         }
 
-        function cetakStruk() {
+        function cetakStrukDenganLoading(btn) {
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="animate-spin h-4 w-4 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Menyiapkan Struk...
+            `;
+
             const el = document.getElementById('struk-content');
             const tinggiMm = Math.ceil(el.offsetHeight * 25.4 / 96) + 6;
 
@@ -525,7 +552,11 @@
             }
             st.textContent = '@page { size: 58mm ' + tinggiMm + 'mm; margin: 0; }';
 
-            window.print();
+            setTimeout(() => {
+                window.print();
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }, 500);
         }
 
         function togglePos(id) {
@@ -615,6 +646,26 @@
                 labelKembalian.className = "font-black text-red-600 text-xs";
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function () {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+                        submitBtn.innerHTML = `
+                            <svg class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Memproses...
+                        `;
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

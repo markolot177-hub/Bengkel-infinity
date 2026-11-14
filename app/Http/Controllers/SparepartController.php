@@ -67,7 +67,7 @@ class SparepartController extends Controller
     }
 
     // Menambah jumlah stok manual
-    public function tambahStok(Request $request, $id)
+    public function tambahStok(Request $request, string|int $id)
     {
         $sparepart = Sparepart::findOrFail($id);
         $sparepart->jumlah_stok += (int) $request->input('tambah_jumlah', 1);
@@ -77,7 +77,7 @@ class SparepartController extends Controller
     }
 
     // Menghapus barang
-    public function destroy($id)
+    public function destroy(string|int $id)
     {
         Sparepart::findOrFail($id)->delete();
 
