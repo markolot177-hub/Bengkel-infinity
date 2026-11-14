@@ -35,6 +35,7 @@ class BookingController extends Controller
 
         if ($namaTabelStok) {
             $totalStok = DB::table($namaTabelStok)->sum('jumlah_stok') ?? 0;
+
             $stokMenipis = DB::table($namaTabelStok)
                 ->where('jumlah_stok', '<=', 5)
                 ->count();
@@ -170,6 +171,11 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Data booking tidak ditemukan!');
         }
 
+        // Booking yang sudah selesai tidak boleh diubah lagi.
+        if (in_array($booking->status, ['Selesai', 'Lunas'], true)) {
+            abort(403, 'Booking yang sudah selesai tidak dapat diubah lagi.');
+        }
+
         $dataUpdate = [
             'status' => $request->status,
             'updated_at' => now(),
@@ -203,12 +209,11 @@ class BookingController extends Controller
      */
     public function indexPortal()
     {
-        $namaPelanggan = session('nama')
-            ?? (Auth::check() ? Auth::user()->name : null);
+        $idPelanggan = session('id_pelanggan');
 
-        $bookings = (Schema::hasTable('bookings') && $namaPelanggan)
+        $bookings = (Schema::hasTable('bookings') && $idPelanggan)
             ? DB::table('bookings')
-                ->where('nama_pelanggan', $namaPelanggan)
+                ->where('id_pelanggan', $idPelanggan)
                 ->orderBy('created_at', 'desc')
                 ->get()
             : collect();
@@ -240,6 +245,7 @@ class BookingController extends Controller
             ?? (Auth::check() ? Auth::user()->name : 'Pelanggan');
 
         DB::table('bookings')->insert([
+            'id_pelanggan' => session('id_pelanggan'),
             'no_booking' => 'BC-' . strtoupper(Str::random(8)),
             'nopol' => $request->nopol,
             'nama_pelanggan' => $namaPelanggan,

@@ -130,7 +130,7 @@
                 <div id="struk-content">
                     <div class="text-center">
                         <h2 style="margin: 0; font-size: 16px; font-weight: bold;">BENGKELCARE</h2>
-                        <div style="font-size: 9px; margin-top: 2px;">SMK Budi Bakti Ciwidey</div>
+                        <div style="font-size: 9px; margin-top: 2px;">ZIKRI MOTOR</div>
                         <div style="font-size: 9px;">Jl. Barutunggul, Ciwidey</div>
                         <div style="font-size: 9px;">Kabupaten Bandung</div>
                     </div>
@@ -293,7 +293,7 @@
                 </div>
 
                 <div class="overflow-x-auto pb-20">
-                    <table class="w-full text-left border-collapse min-w-[650px]">
+                    <table class="w-full text-left border-collapse min-w-[650px]''>
                         <thead>
                             <tr class="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
                                 <th class="py-3 px-4 sm:px-6">Pelanggan & Kendaraan</th>
