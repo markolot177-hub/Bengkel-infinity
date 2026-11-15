@@ -1,59 +1,115 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BengkelCare — Sistem Manajemen & Booking Servis Bengkel Terpadu
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Release](https://img.shields.io/badge/Release-v1.0.0--rc-0D9488?style=for-the-badge)](https://github.com)
+[![Build Status](https://img.shields.io/badge/Build-Passing-10B981?style=for-the-badge)](https://github.com)
+[![Security Audit](https://img.shields.io/badge/Security-Protected-3B82F6?style=for-the-badge)](https://github.com)
+[![License](https://img.shields.io/badge/License-MIT-slate?style=for-the-badge)](LICENSE)
 
-## About Laravel
+> **Proyek Uji Kompetensi Keahlian (UKK) Rekayasa Perangkat Lunak (RPL)**  
+> **Tahun Pelajaran:** 2026/2027 • **Instansi:** SMK Budi Bakti Ciwidey (Kelas XI RPL-4)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 1. Latar Belakang Masalah & Solusi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Pengelolaan operasional bengkel kendaraan bermotor secara konvensional sering menghadapi kendala pencatatan antrean servis manual, kurangnya transparansi progres pengerjaan kepada pemilik kendaraan, risiko selisih perhitungan biaya jasa dan suku cadang, serta keterlambatan pemantauan stok sparepart yang menipis.
 
-## Learning Laravel
+**BengkelCare** hadir sebagai solusi aplikasi web terintegrasi yang mendigitalisasi seluruh alur layanan bengkel:
+1. **Portal Booking & Monitoring Mandiri:** Pelanggan dapat mendaftar akun, memesan jadwal servis berdasarkan sesi waktu, serta memantau progres pengerjaan, catatan mekanik, dan foto bukti servis secara *real-time*.
+2. **Workstation Mekanik:** Memudahkan mekanik memperbarui status pengerjaan (`Menunggu`, `Sedang Dikerjakan`, `Selesai`), mencatat rincian tindakan teknis, dan mengunggah lampiran foto bukti servis.
+3. **Point of Sale (POS) Kasir & Inventori:** Mendukung pencatatan pelanggan *walk-in*, validasi pelunasan transaksi, serta peringatan otomatis untuk stok sparepart kritis (`<= 5` item).
+4. **Dashboard Analitik Administrator:** Menyajikan ringkasan omset harian, grafik pendapatan 7 hari terakhir, manajemen akun pengguna multi-role, dan laporan keuangan siap cetak.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 2. Tech Stack & Arsitektur
 
-## Laravel Sponsors
+* **Frontend:** Laravel Blade Templating, Tailwind CSS, Google Fonts (`Inter`), Vanilla JavaScript ES6.
+* **Backend:** PHP `^8.2`, Laravel Framework (Arsitektur Monolithic MVC).
+* **Database:** MySQL / MariaDB `10.4+` (InnoDB Engine, Normalisasi 3NF).
+* **Keamanan (Security):** Bcrypt Password Hashing (`Hash::make`), Custom Session & RBAC Middleware (`checklogin` & `role`), Parameterized Query Builder (Anti-SQL Injection), serta CSRF Token Protection.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 3. Panduan Instalasi Lokal (Step-by-Step Local Setup)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Ikuti langkah berikut untuk menjalankan aplikasi **BengkelCare** di komputer lokal:
 
-## Contributing
+### Prasyarat Sistem
+* PHP `>= 8.2` dan Composer
+* MySQL / MariaDB Server (Laragon / XAMPP)
+* Git CLI
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Langkah Instalasi
 
-## Code of Conduct
+```bash
+# 1. Clone repositori ini
+git clone [https://github.com/username-anda/Bengkel-infinity.git](https://github.com/username-anda/Bengkel-infinity.git)
+cd Bengkel-infinity
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 2. Pasang seluruh dependensi PHP
+composer install
 
-## Security Vulnerabilities
+# 3. Salin file konfigurasi environment
+cp .env.example .env
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 4. Generate Application Key Laravel
+php artisan key:generate
+```
 
-## License
+### 5. Konfigurasi File `.env`
+Buka file `.env` dan sesuaikan pengaturan koneksi database MySQL Anda:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```env
+APP_NAME=BengkelCare
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=[http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bengkelcare_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+FILESYSTEM_DISK=public
+```
+
+### 6. Migrasi Database, Storage Link & Jalankan Server
+
+```bash
+# Buat database 'bengkelcare_db' di phpMyAdmin/MySQL, lalu jalankan migrasi & seeder
+php artisan migrate --seed
+
+# Hubungkan storage symlink agar foto bukti pengerjaan mekanik dapat diakses
+php artisan storage:link
+
+# Jalankan server lokal Laravel
+php artisan serve
+```
+
+Buka browser dan akses aplikasi melalui alamat: **`http://127.0.0.1:8000`**
+
+---
+
+## 4. Akun Uji Coba Default (Credentials)
+
+Gunakan kredensial berikut untuk menguji seluruh hak akses (*Multi-Role*) pada sistem:
+
+| Role Pengguna | Username / Email Login | Password | Hak Akses Utama |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `tejarsaaeful@bengkelcare.com` | `123456` | Dashboard omset, grafik 7 hari, kelola pengguna, stok sparepart, laporan keuangan |
+| **Kasir** | `andi@bengkelcare.com` | `123456` | Input antrean *walk-in*, proses pembayaran POS kasir, cetak struk lunas |
+| **Mekanik** | `pidin@bengkelcare.com` | `123456` | Update status servis, input catatan pengerjaan, unggah foto bukti servis |
+| **Pelanggan** | `faaaa24@gmail.com` | `123456` | Registrasi mandiri, buat booking servis, pantau progres & foto bukti mekanik |
+
+---
+
+## 5. Anggota Tim Pengembang (Tim Infinity)
+
+* **Tejar Saeful Falah** — *Frontend Specialist & UI/UX Designer* (NISN: `Isi NISN Anda`)
+* **Anggota Tim 2** — *Backend Architect & Database Administrator* (NISN: `Isi NISN Rekan Tim`)
+
+**Guru Pembimbing UKK:** Nama Guru Pembimbing, S.Kom.  
+**SMK Budi Bakti Ciwidey — 2026**
