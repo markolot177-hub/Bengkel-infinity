@@ -64,30 +64,30 @@
             </div>
 
             <nav class="px-3 space-y-1 mt-4">
-    <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
+                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
 
-    <!-- Menu Dashboard -->
-    <a href="/dashboard-admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('dashboard-admin') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
-        Dashboard Utama
-    </a>
+                <!-- Menu Dashboard -->
+                <a href="/dashboard-admin" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('dashboard-admin') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
+                    Dashboard Utama
+                </a>
 
-    <!-- Menu Kelola Pengguna -->
-    @if(Route::has('admin.pengguna.index'))
-    <a href="{{ route('admin.pengguna.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('admin/pengguna*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
-        Kelola Data Pengguna
-    </a>
-    @endif
+                <!-- Menu Kelola Pengguna -->
+                @if(Route::has('admin.pengguna.index'))
+                <a href="{{ route('admin.pengguna.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('admin/pengguna*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
+                    Kelola Data Pengguna
+                </a>
+                @endif
 
-    <!-- Menu Manajemen Sparepart -->
-    <a href="/manajemen-stok" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('manajemen-stok*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
-        Manajemen sparepart
-    </a>
+                <!-- Menu Manajemen Sparepart -->
+                <a href="/manajemen-stok" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('manajemen-stok*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
+                    Manajemen sparepart
+                </a>
 
-    <!-- Menu Laporan Keuangan -->
-    <a href="/laporan-pendapatan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('laporan-pendapatan*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
-        Laporan Keuangan
-    </a>
-</nav>
+                <!-- Menu Laporan Keuangan -->
+                <a href="/laporan-pendapatan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs {{ request()->is('laporan-pendapatan*') ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50 font-medium' }}">
+                    Laporan Keuangan
+                </a>
+            </nav>
         </div>
         <div class="px-6 py-4 border-t border-slate-200">
             <a href="/logout" class="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold">🚪 Keluar Sistem</a>
@@ -140,12 +140,15 @@
                 @if($tglMulai && $tglSelesai)
                     <p style="font-size: 12px; margin: 5px 0 0 0;">Periode: {{ \Carbon\Carbon::parse($tglMulai)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($tglSelesai)->format('d/m/Y') }}</p>
                 @endif
+                @if(!empty($metodePembayaran ?? request('metode_pembayaran')))
+                    <p style="font-size: 12px; margin: 2px 0 0 0;">Metode Pembayaran: {{ $metodePembayaran ?? request('metode_pembayaran') }}</p>
+                @endif
                 <p style="font-size: 12px; margin: 0;">Dicetak pada: {{ date('d/m/Y H:i') }} WIB</p>
             </div>
 
             <!-- KARTU RINGKASAN KEUANGAN -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
-                <div class="bg-white rounded-xl border border-blue-200 p-4 sm:p-5 'shadow-sm bg-gradient-to-br' from-blue-50/50 to-white">
+                <div class="bg-white rounded-xl border border-blue-200 p-4 sm:p-5 shadow-sm bg-gradient-to-br from-blue-50/50 to-white">
                     <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wide">Total Uang Masuk Hari Ini</p>
                     <h3 class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Rp {{ number_format($totalUangHarian ?? 0, 0, ',', '.') }}</h3>
                     <p class="text-[11px] text-slate-500 mt-1">Terhitung dari transaksi lunas hari ini.</p>
@@ -164,23 +167,32 @@
                 </div>
             </div>
 
-            <!-- FORM FILTER RENTANG TANGGAL -->
+            <!-- FORM FILTER RENTANG TANGGAL & METODE PEMBAYARAN -->
             <div class="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm">
-                <h3 class="font-bold text-slate-900 text-xs sm:text-sm mb-3">📅 Filter Laporan Berdasarkan Tanggal</h3>
+                <h3 class="font-bold text-slate-900 text-xs sm:text-sm mb-3">📅 Filter Laporan Berdasarkan Tanggal & Metode Pembayaran</h3>
                 <form action="/laporan-pendapatan" method="GET" class="flex flex-col sm:flex-row items-end gap-3">
                     <div class="w-full sm:w-auto flex-1">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dari Tanggal:</label>
-                        <input type="date" name="tgl_mulai" value="{{ $tglMulai ?? '' }}" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-500">
+                        <input type="date" name="tgl_mulai" value="{{ $tglMulai ?? '' }}" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-500">
                     </div>
                     <div class="w-full sm:w-auto flex-1">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sampai Tanggal:</label>
-                        <input type="date" name="tgl_selesai" value="{{ $tglSelesai ?? '' }}" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-500">
+                        <input type="date" name="tgl_selesai" value="{{ $tglSelesai ?? '' }}" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Metode Pembayaran:</label>
+                        <select name="metode_pembayaran" class="w-full bg-[#F8FAFC] border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-500">
+                            <option value="">Semua Metode</option>
+                            <option value="Tunai" {{ ($metodePembayaran ?? request('metode_pembayaran')) == 'Tunai' ? 'selected' : '' }}>Tunai</option>
+                            <option value="Transfer" {{ ($metodePembayaran ?? request('metode_pembayaran')) == 'Transfer' ? 'selected' : '' }}>Transfer</option>
+                            <option value="QRIS" {{ ($metodePembayaran ?? request('metode_pembayaran')) == 'QRIS' ? 'selected' : '' }}>QRIS</option>
+                        </select>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto">
                         <button type="submit" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1.5">
                             🔍 Tampilkan
                         </button>
-                        @if($tglMulai || $tglSelesai)
+                        @if($tglMulai || $tglSelesai || !empty($metodePembayaran ?? request('metode_pembayaran')))
                             <a href="/laporan-pendapatan" class="flex-1 sm:flex-none bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center">
                                 Reset
                             </a>
@@ -194,10 +206,15 @@
                 <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-3">
                     <div>
                         <h3 class="text-xs sm:text-sm font-bold text-slate-900">Riwayat Rinci Transaksi Kasir (Lunas)</h3>
-                        @if($tglMulai && $tglSelesai)
+                        @if(($tglMulai && $tglSelesai) || !empty($metodePembayaran ?? request('metode_pembayaran')))
                             <p class="text-[11px] text-blue-600 font-bold mt-0.5">
-                                Periode: {{ \Carbon\Carbon::parse($tglMulai)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($tglSelesai)->format('d/m/Y') }}
-                                | Total Periode: <span class="text-emerald-600">Rp {{ number_format($totalHasilFilter ?? 0, 0, ',', '.') }}</span>
+                                @if($tglMulai && $tglSelesai)
+                                    Periode: {{ \Carbon\Carbon::parse($tglMulai)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($tglSelesai)->format('d/m/Y') }}
+                                @endif
+                                @if(!empty($metodePembayaran ?? request('metode_pembayaran')))
+                                    {{ ($tglMulai && $tglSelesai) ? ' | ' : '' }}Metode: {{ $metodePembayaran ?? request('metode_pembayaran') }}
+                                @endif
+                                | Total Filter: <span class="text-emerald-600">Rp {{ number_format($totalHasilFilter ?? 0, 0, ',', '.') }}</span>
                             </p>
                         @endif
                     </div>
@@ -207,7 +224,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-[600px]''>
+                    <table class="w-full text-left min-w-[600px]">
                         <thead>
                             <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-100 bg-slate-50">
                                 <th class="py-3 px-4 sm:px-6">ID Transaksi / Nopol</th>
@@ -236,8 +253,8 @@
                             @empty
                             <tr>
                                 <td colspan="5" class="py-12 text-center text-slate-400 text-xs">
-                                    @if($tglMulai && $tglSelesai)
-                                        Tidak ditemukan transaksi pada rentang tanggal yang dipilih.
+                                    @if(($tglMulai && $tglSelesai) || !empty($metodePembayaran ?? request('metode_pembayaran')))
+                                        Tidak ditemukan transaksi sesuai filter yang dipilih.
                                     @else
                                         Belum ada transaksi pembayaran kasir yang selesai.
                                     @endif

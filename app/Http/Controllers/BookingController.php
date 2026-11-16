@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -240,15 +239,27 @@ class BookingController extends Controller
             'jenis_layanan' => 'required|string',
         ]);
 
-        $namaPelanggan = $request->nama_pelanggan
-            ?? session('nama')
-            ?? (Auth::check() ? Auth::user()->name : 'Pelanggan');
+        // Ambil ID pelanggan dari session login.
+        $idPelanggan = session('id_pelanggan');
+
+        if (!$idPelanggan || session('role') !== 'pelanggan') {
+            abort(403, 'Identitas pelanggan tidak valid.');
+        }
+
+        // Ambil nama pelanggan langsung dari database.
+        $pelanggan = DB::table('pelanggan')
+            ->where('id_pelanggan', $idPelanggan)
+            ->first();
+
+        if (!$pelanggan) {
+            abort(403, 'Data pelanggan tidak ditemukan.');
+        }
 
         DB::table('bookings')->insert([
-            'id_pelanggan' => session('id_pelanggan'),
+            'id_pelanggan' => $idPelanggan,
             'no_booking' => 'BC-' . strtoupper(Str::random(8)),
             'nopol' => $request->nopol,
-            'nama_pelanggan' => $namaPelanggan,
+            'nama_pelanggan' => $pelanggan->nama,
             'kendaraan' => $request->kendaraan,
             'jenis_layanan' => $request->jenis_layanan,
             'tanggal_kedatangan' => $request->tanggal_kedatangan ?? date('Y-m-d'),
@@ -271,6 +282,7 @@ class BookingController extends Controller
     {
         $tglMulai = $request->input('tgl_mulai');
         $tglSelesai = $request->input('tgl_selesai');
+        $metodePembayaran = $request->input('metode_pembayaran');
 
         $totalUangHarian = Schema::hasTable('transaksi')
             ? DB::table('transaksi')
@@ -313,6 +325,10 @@ class BookingController extends Controller
             );
         }
 
+        if ($query && !empty($metodePembayaran)) {
+            $query->where('transaksi.metode_pembayaran', $metodePembayaran);
+        }
+
         $transaksiSelesai = $query
             ? $query->orderBy('transaksi.tgl_transaksi', 'desc')->get()
             : collect();
@@ -327,6 +343,7 @@ class BookingController extends Controller
             'transaksiSelesai',
             'tglMulai',
             'tglSelesai',
+            'metodePembayaran',
             'totalHasilFilter'
         ));
     }

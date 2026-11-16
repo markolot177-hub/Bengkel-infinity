@@ -293,7 +293,7 @@
                 </div>
 
                 <div class="overflow-x-auto pb-20">
-                    <table class="w-full text-left border-collapse min-w-[650px]''>
+                    <table class="w-full text-left border-collapse min-w-[650px]">
                         <thead>
                             <tr class="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-100">
                                 <th class="py-3 px-4 sm:px-6">Pelanggan & Kendaraan</th>
@@ -338,7 +338,6 @@
                                             @else
                                                 <div class="flex items-center justify-end gap-2">
                                                     <span class="text-emerald-600 font-bold text-[11px]">Lunas</span>
-                                                    <!-- Sisa blok kode cetak struk tidak berubah dari versi sebelumnya -->
                                                     @php
                                                         $dbIdServis = $b->id ?? $b->id_servis;
                                                         $transaksi = \Illuminate\Support\Facades\DB::table('transaksi')->where('id_servis', $dbIdServis)->first();
@@ -401,18 +400,25 @@
                                                     <div>
                                                         <h4 class="font-bold text-slate-800 text-xs mb-3 border-b border-slate-100 pb-2">1. Pilih Suku Cadang</h4>
                                                         <div class="flex gap-2 mb-4 flex-wrap sm:flex-nowrap">
-                                                            <select id="select-item-{{ $b->id ?? $b->id_servis }}" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
+                                                            <select id="select-item-{{ $b->id ?? $b->id_servis }}" onchange="cekStokDropdown('{{ $b->id ?? $b->id_servis }}')" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
                                                                 <option value="" disabled selected>-- Pilih Sparepart --</option>
                                                                 @if(isset($stocks))
                                                                     @foreach($stocks as $stock)
-                                                                        <option value="{{ $stock->id ?? $stock->id_sparepart }}" data-nama="{{ $stock->nama_barang }}" data-harga="{{ $stock->harga_jual }}">
-                                                                            {{ $stock->nama_barang }} (Sisa: {{ $stock->jumlah_stok }}) - Rp {{ number_format($stock->harga_jual, 0, ',', '.') }}
+                                                                        @php
+                                                                            $isHabis = ($stock->jumlah_stok ?? 0) <= 0;
+                                                                        @endphp
+                                                                        <option value="{{ $stock->id ?? $stock->id_sparepart }}"
+                                                                                data-nama="{{ $stock->nama_barang }}"
+                                                                                data-harga="{{ $stock->harga_jual }}"
+                                                                                data-stok="{{ $stock->jumlah_stok ?? 0 }}"
+                                                                                {{ $isHabis ? 'disabled class=text-red-400' : '' }}>
+                                                                            {{ $stock->nama_barang }} {{ $isHabis ? '[STOK HABIS]' : '(Sisa: ' . $stock->jumlah_stok . ')' }} - Rp {{ number_format($stock->harga_jual, 0, ',', '.') }}
                                                                         </option>
                                                                     @endforeach
                                                                 @endif
                                                             </select>
                                                             <input type="number" id="qty-{{ $b->id ?? $b->id_servis }}" value="1" min="1" class="w-16 bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs text-center" placeholder="Qty">
-                                                            <button type="button" onclick="addItem('{{ $b->id ?? $b->id_servis }}')" class="bg-slate-800 text-white font-bold px-3 py-2 rounded text-[10px]">Tambah</button>
+                                                            <button type="button" onclick="addItem('{{ $b->id ?? $b->id_servis }}')" class="bg-slate-800 hover:bg-black text-white font-bold px-3 py-2 rounded text-[10px]">Tambah</button>
                                                         </div>
                                                         <div class="bg-[#F8FAFC] border border-slate-200 p-3 rounded h-32 overflow-y-auto">
                                                             <ul id="cart-list-{{ $b->id ?? $b->id_servis }}" class="space-y-1"></ul>
@@ -431,6 +437,7 @@
                                                             <select name="metode_pembayaran" id="metode-{{ $b->id ?? $b->id_servis }}" onchange="toggleCashInput('{{ $b->id ?? $b->id_servis }}')" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs">
                                                                 <option value="Tunai">Tunai / Cash</option>
                                                                 <option value="TRANSFER">Transfer</option>
+                                                                <option value="QRIS">QRIS</option>
                                                             </select>
                                                         </div>
 
@@ -567,6 +574,22 @@
             }
         }
 
+        function cekStokDropdown(bookingId) {
+            const select = document.getElementById('select-item-' + bookingId);
+            const qtyInput = document.getElementById('qty-' + bookingId);
+            if (!select || !qtyInput) return;
+
+            const option = select.options[select.selectedIndex];
+            const stok = parseInt(option.getAttribute('data-stok')) || 0;
+
+            if (stok > 0) {
+                qtyInput.max = stok;
+                if (parseInt(qtyInput.value) > stok) {
+                    qtyInput.value = stok;
+                }
+            }
+        }
+
         function addItem(bookingId) {
             const select = document.getElementById('select-item-' + bookingId);
             const qtyInput = document.getElementById('qty-' + bookingId);
@@ -578,12 +601,38 @@
             }
 
             const option = select.options[select.selectedIndex];
+            if (option.disabled) {
+                alert("Stok barang ini sedang kosong dan tidak dapat dipilih.");
+                return;
+            }
+
             const id = option.value;
             const nama = option.getAttribute('data-nama');
             const harga = parseInt(option.getAttribute('data-harga'));
+            const stokTersedia = parseInt(option.getAttribute('data-stok')) || 0;
+
+            if (stokTersedia <= 0) {
+                alert(`Stok "${nama}" sudah habis!`);
+                return;
+            }
+
+            // Hitung jumlah barang yang sama jika sudah pernah ditambahkan ke keranjang
+            const list = document.getElementById('cart-list-' + bookingId);
+            const existingInputs = list.querySelectorAll(`input[name="barang_id[]"][value="${id}"]`);
+            let qtySudahDiKeranjang = 0;
+            existingInputs.forEach(input => {
+                const liParent = input.closest('li');
+                const qtyEl = liParent ? liParent.querySelector('input[name="qty[]"]') : null;
+                if (qtyEl) qtySudahDiKeranjang += parseInt(qtyEl.value) || 0;
+            });
+
+            if (qty + qtySudahDiKeranjang > stokTersedia) {
+                alert(`Jumlah melebihi sisa stok "${nama}" (Tersedia: ${stokTersedia}, Di keranjang: ${qtySudahDiKeranjang}).`);
+                return;
+            }
+
             const subtotal = harga * qty;
 
-            const list = document.getElementById('cart-list-' + bookingId);
             const li = document.createElement('li');
             li.className = "flex justify-between items-center text-[11px] mb-1 pb-1 border-b border-slate-200 text-slate-700";
             li.innerHTML = `
@@ -596,6 +645,7 @@
             list.appendChild(li);
             updateTotal(bookingId);
             qtyInput.value = 1;
+            qtyInput.removeAttribute('max');
             select.selectedIndex = 0;
         }
 

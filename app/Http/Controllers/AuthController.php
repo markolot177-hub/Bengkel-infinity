@@ -39,16 +39,24 @@ class AuthController extends Controller
                 'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
             ]);
 
-            // Cek agar username tidak bentrok dengan akun pengelola (Admin/Kasir/Mekanik)
-            if (Schema::hasTable('pengelola') && DB::table('pengelola')->where('username', $request->username)->exists()) {
+            if (
+                Schema::hasTable('pengelola') &&
+                DB::table('pengelola')
+                    ->where('username', $request->username)
+                    ->exists()
+            ) {
                 return back()
-                    ->withErrors(['username' => 'Username sudah digunakan, silakan pilih username lain.'])
+                    ->withErrors([
+                        'username' => 'Username sudah digunakan, silakan pilih username lain.'
+                    ])
                     ->withInput($request->except('password', 'password_confirmation'));
             }
 
             if (!Schema::hasTable('pelanggan')) {
                 return back()
-                    ->withErrors(['error' => 'Tabel pelanggan tidak ditemukan di database.'])
+                    ->withErrors([
+                        'error' => 'Tabel pelanggan tidak ditemukan di database.'
+                    ])
                     ->withInput($request->except('password', 'password_confirmation'));
             }
 
@@ -86,13 +94,19 @@ class AuthController extends Controller
             DB::table('pelanggan')->insert($data);
 
             return redirect()->route('login')
-                ->with('success', 'Akun berhasil dibuat! Silakan masuk menggunakan username dan kata sandi Anda.');
+                ->with(
+                    'success',
+                    'Akun berhasil dibuat! Silakan masuk menggunakan username dan kata sandi Anda.'
+                );
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
+
         } catch (\Exception $e) {
             return back()
-                ->withErrors(['error' => 'Gagal mendaftarkan akun: ' . $e->getMessage()])
+                ->withErrors([
+                    'error' => 'Gagal mendaftarkan akun: ' . $e->getMessage()
+                ])
                 ->withInput($request->except('password', 'password_confirmation'));
         }
     }
@@ -105,11 +119,12 @@ class AuthController extends Controller
                 'password' => 'required|string',
             ]);
 
-            $credential = $request->email; // Berisi username yang diinput user
+            $credential = $request->email;
             $password = $request->password;
 
-            // 1. Cek tabel pengelola (Admin, Kasir, Mekanik) berdasarkan username
+            // 1. Login pengelola
             $pengelola = null;
+
             if (Schema::hasTable('pengelola')) {
                 $pengelola = DB::table('pengelola')
                     ->where('username', $credential)
@@ -128,10 +143,28 @@ class AuthController extends Controller
 
                 if ($isValid) {
                     $role = strtolower(trim($pengelola->role ?? 'admin'));
+
+                    $idPengelola = $pengelola->id_pengelola
+                        ?? $pengelola->id
+                        ?? null;
+
+                    if (!$idPengelola) {
+                        return back()->withErrors([
+                            'error' => 'ID pengelola tidak ditemukan.'
+                        ]);
+                    }
+
                     $request->session()->regenerate();
 
-                    session([
-                        'id_pengelola' => $pengelola->id_pengelola ?? $pengelola->id ?? 1,
+                    // Bersihkan identitas pelanggan sebelumnya
+                    $request->session()->forget([
+                        'id_pelanggan',
+                        'user_id',
+                        'id',
+                    ]);
+
+                    $request->session()->put([
+                        'id_pengelola' => $idPengelola,
                         'nama' => $pengelola->nama ?? 'Pengelola',
                         'role' => $role,
                         'logged_in' => true,
@@ -144,12 +177,14 @@ class AuthController extends Controller
                     } elseif ($role === 'mekanik') {
                         return redirect()->route('mekanik.workstation');
                     }
+
                     return redirect('/dashboard');
                 }
             }
 
-            // 2. Cek tabel pelanggan HANYA berdasarkan username (karena kolom email tidak ada di database)
+            // 2. Login pelanggan berdasarkan username
             $pelanggan = null;
+
             if (Schema::hasTable('pelanggan')) {
                 $pelanggan = DB::table('pelanggan')
                     ->where('username', $credential)
@@ -167,11 +202,27 @@ class AuthController extends Controller
                 }
 
                 if ($isValid) {
+                    // Ambil ID asli dari primary key pelanggan
+                    $idPelanggan = $pelanggan->id_pelanggan ?? null;
+
+                    if (!$idPelanggan) {
+                        return back()->withErrors([
+                            'error' => 'ID pelanggan tidak ditemukan di database.'
+                        ]);
+                    }
+
                     $request->session()->regenerate();
 
-                    session([
-                        'id_pelanggan' => $pelanggan->id_pelanggan ?? $pelanggan->id ?? 1,
-                        'nama' => $pelanggan->nama ?? $pelanggan->nama_lengkap ?? 'Pelanggan',
+                    // Bersihkan identitas pengelola sebelumnya
+                    $request->session()->forget([
+                        'id_pengelola',
+                        'user_id',
+                        'id',
+                    ]);
+
+                    $request->session()->put([
+                        'id_pelanggan' => $idPelanggan,
+                        'nama' => $pelanggan->nama ?? 'Pelanggan',
                         'role' => 'pelanggan',
                         'logged_in' => true,
                     ]);
@@ -181,12 +232,16 @@ class AuthController extends Controller
             }
 
             return back()
-                ->withErrors(['error' => 'Username atau Kata Sandi yang Anda masukkan salah.'])
+                ->withErrors([
+                    'error' => 'Username atau Kata Sandi yang Anda masukkan salah.'
+                ])
                 ->withInput($request->only('email'));
 
         } catch (\Exception $e) {
             return back()
-                ->withErrors(['error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()])
+                ->withErrors([
+                    'error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+                ])
                 ->withInput();
         }
     }

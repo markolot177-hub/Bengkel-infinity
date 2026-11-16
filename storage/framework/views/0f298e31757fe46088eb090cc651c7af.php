@@ -130,7 +130,7 @@
                 <div id="struk-content">
                     <div class="text-center">
                         <h2 style="margin: 0; font-size: 16px; font-weight: bold;">BENGKELCARE</h2>
-                        <div style="font-size: 9px; margin-top: 2px;">SMK Budi Bakti Ciwidey</div>
+                        <div style="font-size: 9px; margin-top: 2px;">ZIKRI MOTOR</div>
                         <div style="font-size: 9px;">Jl. Barutunggul, Ciwidey</div>
                         <div style="font-size: 9px;">Kabupaten Bandung</div>
                     </div>
@@ -339,7 +339,6 @@
                                             <?php else: ?>
                                                 <div class="flex items-center justify-end gap-2">
                                                     <span class="text-emerald-600 font-bold text-[11px]">Lunas</span>
-                                                    <!-- Sisa blok kode cetak struk tidak berubah dari versi sebelumnya -->
                                                     <?php
                                                         $dbIdServis = $b->id ?? $b->id_servis;
                                                         $transaksi = \Illuminate\Support\Facades\DB::table('transaksi')->where('id_servis', $dbIdServis)->first();
@@ -402,19 +401,26 @@
                                                     <div>
                                                         <h4 class="font-bold text-slate-800 text-xs mb-3 border-b border-slate-100 pb-2">1. Pilih Suku Cadang</h4>
                                                         <div class="flex gap-2 mb-4 flex-wrap sm:flex-nowrap">
-                                                            <select id="select-item-<?php echo e($b->id ?? $b->id_servis); ?>" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
+                                                            <select id="select-item-<?php echo e($b->id ?? $b->id_servis); ?>" onchange="cekStokDropdown('<?php echo e($b->id ?? $b->id_servis); ?>')" class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500">
                                                                 <option value="" disabled selected>-- Pilih Sparepart --</option>
                                                                 <?php if(isset($stocks)): ?>
                                                                     <?php $__currentLoopData = $stocks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stock): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                                        <option value="<?php echo e($stock->id ?? $stock->id_sparepart); ?>" data-nama="<?php echo e($stock->nama_barang); ?>" data-harga="<?php echo e($stock->harga_jual); ?>">
-                                                                            <?php echo e($stock->nama_barang); ?> (Sisa: <?php echo e($stock->jumlah_stok); ?>) - Rp <?php echo e(number_format($stock->harga_jual, 0, ',', '.')); ?>
+                                                                        <?php
+                                                                            $isHabis = ($stock->jumlah_stok ?? 0) <= 0;
+                                                                        ?>
+                                                                        <option value="<?php echo e($stock->id ?? $stock->id_sparepart); ?>"
+                                                                                data-nama="<?php echo e($stock->nama_barang); ?>"
+                                                                                data-harga="<?php echo e($stock->harga_jual); ?>"
+                                                                                data-stok="<?php echo e($stock->jumlah_stok ?? 0); ?>"
+                                                                                <?php echo e($isHabis ? 'disabled class=text-red-400' : ''); ?>>
+                                                                            <?php echo e($stock->nama_barang); ?> <?php echo e($isHabis ? '[STOK HABIS]' : '(Sisa: ' . $stock->jumlah_stok . ')'); ?> - Rp <?php echo e(number_format($stock->harga_jual, 0, ',', '.')); ?>
 
                                                                         </option>
                                                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                                 <?php endif; ?>
                                                             </select>
                                                             <input type="number" id="qty-<?php echo e($b->id ?? $b->id_servis); ?>" value="1" min="1" class="w-16 bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs text-center" placeholder="Qty">
-                                                            <button type="button" onclick="addItem('<?php echo e($b->id ?? $b->id_servis); ?>')" class="bg-slate-800 text-white font-bold px-3 py-2 rounded text-[10px]">Tambah</button>
+                                                            <button type="button" onclick="addItem('<?php echo e($b->id ?? $b->id_servis); ?>')" class="bg-slate-800 hover:bg-black text-white font-bold px-3 py-2 rounded text-[10px]">Tambah</button>
                                                         </div>
                                                         <div class="bg-[#F8FAFC] border border-slate-200 p-3 rounded h-32 overflow-y-auto">
                                                             <ul id="cart-list-<?php echo e($b->id ?? $b->id_servis); ?>" class="space-y-1"></ul>
@@ -433,6 +439,7 @@
                                                             <select name="metode_pembayaran" id="metode-<?php echo e($b->id ?? $b->id_servis); ?>" onchange="toggleCashInput('<?php echo e($b->id ?? $b->id_servis); ?>')" required class="w-full bg-[#F8FAFC] border border-slate-200 rounded p-2 text-xs">
                                                                 <option value="Tunai">Tunai / Cash</option>
                                                                 <option value="TRANSFER">Transfer</option>
+                                                                <option value="QRIS">QRIS</option>
                                                             </select>
                                                         </div>
 
@@ -569,6 +576,22 @@
             }
         }
 
+        function cekStokDropdown(bookingId) {
+            const select = document.getElementById('select-item-' + bookingId);
+            const qtyInput = document.getElementById('qty-' + bookingId);
+            if (!select || !qtyInput) return;
+
+            const option = select.options[select.selectedIndex];
+            const stok = parseInt(option.getAttribute('data-stok')) || 0;
+
+            if (stok > 0) {
+                qtyInput.max = stok;
+                if (parseInt(qtyInput.value) > stok) {
+                    qtyInput.value = stok;
+                }
+            }
+        }
+
         function addItem(bookingId) {
             const select = document.getElementById('select-item-' + bookingId);
             const qtyInput = document.getElementById('qty-' + bookingId);
@@ -580,12 +603,38 @@
             }
 
             const option = select.options[select.selectedIndex];
+            if (option.disabled) {
+                alert("Stok barang ini sedang kosong dan tidak dapat dipilih.");
+                return;
+            }
+
             const id = option.value;
             const nama = option.getAttribute('data-nama');
             const harga = parseInt(option.getAttribute('data-harga'));
+            const stokTersedia = parseInt(option.getAttribute('data-stok')) || 0;
+
+            if (stokTersedia <= 0) {
+                alert(`Stok "${nama}" sudah habis!`);
+                return;
+            }
+
+            // Hitung jumlah barang yang sama jika sudah pernah ditambahkan ke keranjang
+            const list = document.getElementById('cart-list-' + bookingId);
+            const existingInputs = list.querySelectorAll(`input[name="barang_id[]"][value="${id}"]`);
+            let qtySudahDiKeranjang = 0;
+            existingInputs.forEach(input => {
+                const liParent = input.closest('li');
+                const qtyEl = liParent ? liParent.querySelector('input[name="qty[]"]') : null;
+                if (qtyEl) qtySudahDiKeranjang += parseInt(qtyEl.value) || 0;
+            });
+
+            if (qty + qtySudahDiKeranjang > stokTersedia) {
+                alert(`Jumlah melebihi sisa stok "${nama}" (Tersedia: ${stokTersedia}, Di keranjang: ${qtySudahDiKeranjang}).`);
+                return;
+            }
+
             const subtotal = harga * qty;
 
-            const list = document.getElementById('cart-list-' + bookingId);
             const li = document.createElement('li');
             li.className = "flex justify-between items-center text-[11px] mb-1 pb-1 border-b border-slate-200 text-slate-700";
             li.innerHTML = `
@@ -598,6 +647,7 @@
             list.appendChild(li);
             updateTotal(bookingId);
             qtyInput.value = 1;
+            qtyInput.removeAttribute('max');
             select.selectedIndex = 0;
         }
 

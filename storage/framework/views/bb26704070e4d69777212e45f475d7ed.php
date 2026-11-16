@@ -36,7 +36,7 @@
             </nav>
         </div>
         <div class="px-6 py-4 border-t border-slate-200">
-            <a href="/" class="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold">Keluar Akun</a>
+            <a href="/logout" class="flex items-center gap-3 px-3 py-2.5 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold">Keluar Akun</a>
         </div>
     </aside>
 
@@ -63,7 +63,7 @@
                 </div>
             <?php endif; ?>
 
-            <div class="bg-gradient-to-r' from-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 class="text-lg sm:text-xl font-black">Status Kendaraan & Riwayat Booking</h2>
                     <p class="text-xs text-blue-100 mt-1">Pantau progres pengerjaan mekanik dan rincian biaya secara transparan.</p>
@@ -113,13 +113,30 @@
 
                         <div class="pt-2 border-t border-slate-200">
                             <span class="text-[10px] text-slate-500 font-bold uppercase block mb-2">Lampiran / Bukti Pengerjaan Mekanik:</span>
-                            <?php if(isset($b->lampiran) && $b->lampiran): ?>
+                            <?php if(!empty($b->lampiran)): ?>
+                                <?php
+                                    $file = ltrim($b->lampiran, '/');
+                                    $kandidatPath = [
+                                        $file,
+                                        'storage/' . $file,
+                                        'storage/lampiran/' . $file,
+                                        'uploads/lampiran/' . $file,
+                                        'uploads/' . $file,
+                                    ];
+                                    $urlFoto = asset('storage/' . $file);
+                                    foreach ($kandidatPath as $path) {
+                                        if (file_exists(public_path($path)) && is_file(public_path($path))) {
+                                            $urlFoto = asset($path);
+                                            break;
+                                        }
+                                    }
+                                ?>
                                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                                    <a href="<?php echo e(asset('uploads/lampiran/' . $b->lampiran)); ?>" target="_blank">
-                                        <img src="<?php echo e(asset('storage/' . $b->lampiran)); ?>" alt="Bukti Servis" class="w-full sm:w-28 h-32 sm:h-20 object-cover rounded-lg border border-slate-300 shadow-sm hover:opacity-90 transition-opacity">
+                                    <a href="<?php echo e($urlFoto); ?>" target="_blank">
+                                        <img src="<?php echo e($urlFoto); ?>" alt="Bukti Servis" class="w-full sm:w-28 h-32 sm:h-20 object-cover rounded-lg border border-slate-300 shadow-sm hover:opacity-90 transition-opacity">
                                     </a>
                                     <div>
-                                        <a href="<?php echo e(asset('storage/' . $b->lampiran)); ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-3.5 py-2 rounded-lg shadow-sm inline-block transition-colors">
+                                        <a href="<?php echo e($urlFoto); ?>" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] px-3.5 py-2 rounded-lg shadow-sm inline-block transition-colors">
                                             🔍 Lihat Foto Ukuran Penuh
                                         </a>
                                         <p class="text-[10px] text-slate-400 mt-1">Klik gambar atau tombol untuk melihat detail foto.</p>
