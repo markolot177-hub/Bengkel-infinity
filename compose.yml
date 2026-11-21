@@ -1,0 +1,56 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
+      php artisan storage:link --force || true &&
+      php artisan migrate --force &&
+      php artisan db:seed --force || true &&
+      apache2-foreground"
+    environment:
+      APP_NAME: "${APP_NAME:-BengkelCare}"
+      APP_ENV: "${APP_ENV:-production}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_KEY: "${APP_KEY:-base64:EW3BDfAoelz6QNcn9D8jqCqiLDarZNC2mYZZxEgoPs0=}"
+      APP_URL: "${APP_URL:-https://tim-infinity.smkbbc.my.id}"
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: "${DB_DATABASE:-db_bengkel}"
+      DB_USERNAME: "${DB_USERNAME:-bengkel_user}"
+      DB_PASSWORD: "${DB_PASSWORD:-bengkel_pass123}"
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bengkel-net
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-db_bengkel}"
+      MYSQL_USER: "${DB_USERNAME:-bengkel_user}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-bengkel_pass123}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root_pass123}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bengkel-net
+
+volumes:
+  mysql_data:
+
+networks:
+  bengkel-net:
