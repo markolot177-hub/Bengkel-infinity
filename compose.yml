@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    ports:
+      - "8081:80"
     command: >
       sh -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
       php artisan storage:link --force || true &&
@@ -34,6 +36,8 @@ services:
   db:
     image: mysql:8.0
     restart: unless-stopped
+    ports:
+      - "3307:3306"
     environment:
       MYSQL_DATABASE: "${DB_DATABASE:-db_bengkel}"
       MYSQL_USER: "${DB_USERNAME:-bengkel_user}"
